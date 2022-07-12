@@ -34,9 +34,16 @@ runs:
       run: |
         DEPLOY_REPO_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
         echo "DEPLOY_REPO_URL=${DEPLOY_REPO_URL}" >> $GITHUB_ENV
-
+        
         DEPLOY_BRANCH="env/${{ inputs.environment }}"
         echo "DEPLOY_BRANCH=${DEPLOY_BRANCH}" >> $GITHUB_ENV
+        
+        if git ls-remote --heads origin "deploy-pr/env/${{ inputs.environment }}"; then
+          DIFF_BRANCH="deploy-pr/env/${{ inputs.environment }}"
+        else
+          DIFF_BRANCH="env/${{ inputs.environment }}"
+        fi
+        echo "DIFF_BRANCH=${DIFF_BRANCH}" >> $GITHUB_ENV
 
         DEPLOY_BRANCH_URL="${DEPLOY_REPO_URL}/tree/${DEPLOY_BRANCH}"
         echo "DEPLOY_BRANCH_URL=${DEPLOY_BRANCH_URL}" >> $GITHUB_ENV
@@ -60,7 +67,7 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         # Automatically add meta annotations at build-time
-        pushd ${DEPLOY_BRANCH} || exit 1
+        pushd ${DIFF_BRANCH} || exit 1
         kustomize edit add annotation deployment-branch:"${DEPLOY_BRANCH}"
         kustomize edit add annotation deployment-branch-url:"${DEPLOY_BRANCH_URL}"
         kustomize edit add annotation deployment-repo:"${GITHUB_REPOSITORY}"
@@ -78,19 +85,13 @@ runs:
         # Must reset to clear build-time annotations
         git reset --hard
 
-        if ! git checkout ${DEPLOY_BRANCH} -- ; then
-          git checkout --orphan ${DEPLOY_BRANCH}
+        if ! git checkout ${DIFF_BRANCH} -- ; then
+          git checkout --orphan ${DIFF_BRANCH}
           git rm -rf --ignore-unmatch '*'
           # Ensure that branch will not be polluted with unrendered YAML
           rm -rf base/ env/
           cp /tmp/*.y*ml .
-          git add *.y*ml
-          if [ -n "${{ github.event.inputs.commit_message }}" ]; then
-            git commit -m "${{ github.event.inputs.commit_message }}"
-          else
-            git commit -m "${{ github.event.head_commit.message }}"
-          fi
-          git push --set-upstream origin ${DEPLOY_BRANCH}
+          git commit --allow-empty -m "Initial Commit"
         else
           echo "Cleaning staging area..."
           git rm -rf --ignore-unmatch '*'
@@ -110,10 +111,10 @@ runs:
       id: diff
       working-directory: ${{ inputs.working-directory }}
       run: |
-        if ! git diff --quiet origin/${DEPLOY_BRANCH} ; then
+        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
           git commit -m "DIFF ONLY: ${{ github.event.head_commit.message }}"
-          git diff origin/${DEPLOY_BRANCH} > git-diff
-          echo "git diff origin/${DEPLOY_BRANCH}:"
+          git diff origin/${DIFF_BRANCH} > git-diff
+          echo "git diff origin/${DIFF_BRANCH}:"
           cat git-diff
           diff="$(cat git-diff)"
           diff="${diff//'%'/'%25'}"
@@ -127,7 +128,7 @@ runs:
           echo "Bytes: ${bytes}"
           echo "::set-output name=diff-bytes::$bytes"
         else
-          echo "There are no changes to push to the ${DEPLOY_BRANCH} branch."
+          echo "There are no changes to push to the ${DIFF_BRANCH} branch."
         fi
 
     - name: Find Comment
