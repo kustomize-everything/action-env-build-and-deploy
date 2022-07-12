@@ -67,7 +67,7 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         # Automatically add meta annotations at build-time
-        pushd ${DIFF_BRANCH} || exit 1
+        pushd ${DEPLOY_BRANCH} || exit 1
         kustomize edit add annotation deployment-branch:"${DEPLOY_BRANCH}"
         kustomize edit add annotation deployment-branch-url:"${DEPLOY_BRANCH_URL}"
         kustomize edit add annotation deployment-repo:"${GITHUB_REPOSITORY}"
@@ -106,7 +106,7 @@ runs:
           git status
         fi
 
-    - name: Git diff against ${DEPLOY_BRANCH}
+    - name: Git diff against ${DIFF_BRANCH}
       shell: bash
       id: diff
       working-directory: ${{ inputs.working-directory }}
@@ -137,7 +137,7 @@ runs:
       with:
         issue-number: ${{ github.event.pull_request.number }}
         comment-author: 'github-actions[bot]'
-        body-includes: Diff output against ${{env.DEPLOY_BRANCH}}
+        body-includes: Diff output against ${{env.DIFF_BRANCH}}
 
     - name: Create or update comment with No Changes
       if: ${{ steps.fc.outputs.comment-id != 0 && steps.diff.outputs.diff-bytes == 0 }}
@@ -146,7 +146,7 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
-          Diff output against ${{env.DEPLOY_BRANCH}}
+          Diff output against ${{env.DIFF_BRANCH}}
 
           No changes detected.
         edit-mode: replace
@@ -159,7 +159,7 @@ runs:
         issue-number: ${{ github.event.pull_request.number }}
         body: |
           <details>
-            <summary>Diff output against ${{env.DEPLOY_BRANCH}}</summary>
+            <summary>Diff output against ${{env.DIFF_BRANCH}}</summary>
 
           ```diff
           ${{ steps.diff.outputs.diff }}
@@ -174,7 +174,7 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
-          Diff output against ${{env.DEPLOY_BRANCH}}
+          Diff output against ${{env.DIFF_BRANCH}}
 
           To large to display in a comment. Please [check the logs](${{env.RUN_URL}}).
         edit-mode: replace
