@@ -1,0 +1,179 @@
+---
+name: environment-kustomize-build-deploy
+description: Uses kustomize to build and commit to an environment branch or opens a PR
+inputs:
+  environment:
+    description: The environment to build and deploy or open/update a PR for
+    required: true
+  working-directory:
+    description: The location where the deployment git repo is checked out
+    required: true
+  version:
+    description: Version of Kustomize to use
+    required: false
+    default: 4.5.3
+  sha256-checksum:
+    description: Checksum of Kustomize version
+    required: false
+    default: e4dc2f795235b03a2e6b12c3863c44abe81338c5c0054b29baf27dcc734ae693
+  git-commit-user:
+    description: Name to add to the Git Commit Message
+    required: false
+    default: Kustomize Everything
+  git-commit-email:
+    description: Email to add to the Git Commit Message
+    required: false
+    default: kustomize-everything@users.noreply.github.com
+runs:
+  using: composite
+  steps:
+    # These variables are re-used by the run steps.
+    - name: Shared ENV Setup
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        DEPLOY_REPO_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
+        echo "DEPLOY_REPO_URL=${DEPLOY_REPO_URL}" >> $GITHUB_ENV
+
+        DEPLOY_BRANCH="env/${{ inputs.environment }}"
+        echo "DEPLOY_BRANCH=${DEPLOY_BRANCH}" >> $GITHUB_ENV
+
+        DEPLOY_BRANCH_URL="${DEPLOY_REPO_URL}/tree/${DEPLOY_BRANCH}"
+        echo "DEPLOY_BRANCH_URL=${DEPLOY_BRANCH_URL}" >> $GITHUB_ENV
+
+        RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+        echo "RUN_URL=${RUN_URL}" >> $GITHUB_ENV
+
+    # Kustomize setup (this should be abstracted into a separate action repo)
+    - name: Kustomize Setup
+      uses: kustomize-everything/action-kustomize@main
+
+    - name: Set Git Author
+      shell: bash
+      run: |
+        git config --global user.name ${{ inputs.git-commit-user }}
+        git config --global user.email ${{ inputs.git-commit-email }}
+
+    # Kustomize Build
+    - name: Kustomize Build
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        # Automatically add meta annotations at build-time
+        pushd ${DEPLOY_BRANCH} || exit 1
+        kustomize edit add annotation deployment-branch:"${DEPLOY_BRANCH}"
+        kustomize edit add annotation deployment-branch-url:"${DEPLOY_BRANCH_URL}"
+        kustomize edit add annotation deployment-repo:"${GITHUB_REPOSITORY}"
+        kustomize edit add annotation deployment-repo-url:"${DEPLOY_REPO_URL}"
+        kustomize edit add buildmetadata originAnnotations,managedByLabel
+        popd || exit 1
+
+        kustomize build --enable-helm ${DEPLOY_BRANCH} > /tmp/all.yaml
+
+        pushd /tmp || exit 1
+        yq -s '.kind + "-" + (.apiVersion | sub("\/", "_")) + "-" + .metadata.name' < all.yaml
+        rm all.yaml
+        popd || exit 1
+
+        # Must reset to clear build-time annotations
+        git reset --hard
+
+        if ! git checkout ${DEPLOY_BRANCH} -- ; then
+          git checkout --orphan ${DEPLOY_BRANCH}
+          git rm -rf --ignore-unmatch '*'
+          # Ensure that branch will not be polluted with unrendered YAML
+          rm -rf base/ env/
+          cp /tmp/*.y*ml .
+          git add *.y*ml
+          if [ -n "${{ github.event.inputs.commit_message }}" ]; then
+            git commit -m "${{ github.event.inputs.commit_message }}"
+          else
+            git commit -m "${{ github.event.head_commit.message }}"
+          fi
+          git push --set-upstream origin ${DEPLOY_BRANCH}
+        else
+          echo "Cleaning staging area..."
+          git rm -rf --ignore-unmatch '*'
+          # Ensure that branch will not be polluted with unrendered YAML
+          rm -rf base/ env/
+          echo "Post-staging cleanup status:"
+          git status
+          echo "Moving built k8s-manifests into staging area..."
+          cp /tmp/*.y*ml .
+          git add --all -fv *.y*ml
+          echo "Changed manifests:"
+          git status
+        fi
+
+    - name: Git diff against ${DEPLOY_BRANCH}
+      shell: bash
+      id: diff
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        if ! git diff --quiet origin/${DEPLOY_BRANCH} ; then
+          git commit -m "DIFF ONLY: ${{ github.event.head_commit.message }}"
+          git diff origin/${DEPLOY_BRANCH} > git-diff
+          echo "git diff origin/${DEPLOY_BRANCH}:"
+          cat git-diff
+          diff="$(cat git-diff)"
+          diff="${diff//'%'/'%25'}"
+          diff="${diff//$'\n'/'%0A'}"
+          diff="${diff//$'\r'/'%0D'}"
+          echo "::set-output name=diff::$diff"
+          echo "Diff:"
+          echo "${diff}"
+          bytes="$(wc -c < git-diff | tr -d ' \n')"
+          echo
+          echo "Bytes: ${bytes}"
+          echo "::set-output name=diff-bytes::$bytes"
+        else
+          echo "There are no changes to push to the ${DEPLOY_BRANCH} branch."
+        fi
+
+    - name: Find Comment
+      uses: peter-evans/find-comment@v2
+      id: fc
+      with:
+        issue-number: ${{ github.event.pull_request.number }}
+        comment-author: 'github-actions[bot]'
+        body-includes: Diff output against ${{env.DEPLOY_BRANCH}}
+
+    - name: Create or update comment with No Changes
+      if: ${{ steps.fc.outputs.comment-id != 0 && steps.diff.outputs.diff-bytes == 0 }}
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        comment-id: ${{ steps.fc.outputs.comment-id }}
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          Diff output against ${{env.DEPLOY_BRANCH}}
+
+          No changes detected.
+        edit-mode: replace
+
+    - name: Create or update comment with Diff
+      if: ${{ steps.diff.outputs.diff-bytes > 0 && steps.diff.outputs.diff-bytes < 65000 }}
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        comment-id: ${{ steps.fc.outputs.comment-id }}
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          <details>
+            <summary>Diff output against ${{env.DEPLOY_BRANCH}}</summary>
+
+          ```diff
+          ${{ steps.diff.outputs.diff }}
+          ```
+          </details>
+        edit-mode: replace
+
+    - name: Create or update comment with Too Big Diff
+      if: ${{ steps.diff.outputs.diff-bytes >= 65000 }}
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        comment-id: ${{ steps.fc.outputs.comment-id }}
+        issue-number: ${{ github.event.pull_request.number }}
+        body: |
+          Diff output against ${{env.DEPLOY_BRANCH}}
+
+          To large to display in a comment. Please [check the logs](${{env.RUN_URL}}).
+        edit-mode: replace
