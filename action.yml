@@ -38,11 +38,13 @@ runs:
         DEPLOY_BRANCH="env/${{ inputs.environment }}"
         echo "DEPLOY_BRANCH=${DEPLOY_BRANCH}" >> $GITHUB_ENV
         
+        set +e
         if git ls-remote --heads origin "deploy-pr/env/${{ inputs.environment }}"; then
           DIFF_BRANCH="deploy-pr/env/${{ inputs.environment }}"
         else
           DIFF_BRANCH="env/${{ inputs.environment }}"
         fi
+        set -e
         echo "DIFF_BRANCH=${DIFF_BRANCH}" >> $GITHUB_ENV
 
         DEPLOY_BRANCH_URL="${DEPLOY_REPO_URL}/tree/${DEPLOY_BRANCH}"
