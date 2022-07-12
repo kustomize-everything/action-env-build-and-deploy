@@ -39,7 +39,7 @@ runs:
         echo "DEPLOY_BRANCH=${DEPLOY_BRANCH}" >> $GITHUB_ENV
         
         set +e
-        if git ls-remote --heads origin "deploy-pr/env/${{ inputs.environment }}"; then
+        if git branch -r --contains "origin/deploy-pr/env/${{ inputs.environment }}"; then
           DIFF_BRANCH="deploy-pr/env/${{ inputs.environment }}"
         else
           DIFF_BRANCH="env/${{ inputs.environment }}"
