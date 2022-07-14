@@ -7,13 +7,16 @@ inputs:
     required: true
   push-environment-regex:
     description: Regex to match environments which will be pushed to directly
+    required: false
     default: .*(development|integration).*
   pr-environment-regex:
     description: Regex to match environments which will push to a deploy-pr/env/<environment> branch and open a PR for review
+    required: false
     default: .*(staging|production).*
   dry-run:
     description: On a dry-run only the kustomize build will occur and the built branch will not be pushed anywhere.
-    default: true
+    required: false
+    default: 'true'
   working-directory:
     description: The location where the deployment git repo is checked out
     required: true
