@@ -1,10 +1,19 @@
 ---
-name: environment-kustomize-build-deploy
+name: environment-kustomize-build-and-deploy
 description: Uses kustomize to build and commit to an environment branch or opens a PR
 inputs:
   environment:
     description: The environment to build and deploy or open/update a PR for
     required: true
+  push-environments:
+    description: Environments which will be pushed to directly
+    default: .*(development|integration).*
+  pr-environments:
+    description: Environments which will push to a deploy-pr/env/<environment> branch and open a PR for review
+    default: .*(staging|production).*
+  dry-run:
+    description: On a dry-run only the kustomize build will occur and the built branch will not be pushed anywhere.
+    default: true
   working-directory:
     description: The location where the deployment git repo is checked out
     required: true
@@ -111,13 +120,13 @@ runs:
           git status
         fi
 
-    - name: Git diff against ${DIFF_BRANCH}
+    - name: Git commit and diff against ${DIFF_BRANCH}
       shell: bash
       id: diff
       working-directory: ${{ inputs.working-directory }}
       run: |
         if ! git diff --quiet origin/${DIFF_BRANCH} ; then
-          git commit -m "DIFF ONLY: ${{ github.event.head_commit.message }}"
+          git commit -m "${{ github.event.head_commit.message }}"
           git diff origin/${DIFF_BRANCH} > git-diff
           echo "git diff origin/${DIFF_BRANCH}:"
           cat git-diff
@@ -137,6 +146,7 @@ runs:
         fi
 
     - name: Find Comment
+      if: ${{ github.event_name == "pull_request" }}
       uses: peter-evans/find-comment@v2
       id: fc
       with:
@@ -145,7 +155,7 @@ runs:
         body-includes: Diff output against ${{env.DIFF_BRANCH}}
 
     - name: Create or update comment with No Changes
-      if: ${{ steps.fc.outputs.comment-id != 0 && steps.diff.outputs.diff-bytes == 0 }}
+      if: ${{ github.event_name == "pull_request" && steps.fc.outputs.comment-id != 0 && steps.diff.outputs.diff-bytes == 0 }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -157,7 +167,7 @@ runs:
         edit-mode: replace
 
     - name: Create or update comment with Diff
-      if: ${{ steps.diff.outputs.diff-bytes > 0 && steps.diff.outputs.diff-bytes < 65000 }}
+      if: ${{ github.event_name == "pull_request" && steps.diff.outputs.diff-bytes > 0 && steps.diff.outputs.diff-bytes < 65000 }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -173,7 +183,7 @@ runs:
         edit-mode: replace
 
     - name: Create or update comment with Too Big Diff
-      if: ${{ steps.diff.outputs.diff-bytes >= 65000 }}
+      if: ${{ github.event_name == "pull_request" && steps.diff.outputs.diff-bytes >= 65000 }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
