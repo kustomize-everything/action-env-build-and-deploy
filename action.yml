@@ -225,7 +225,7 @@ runs:
     - name: Deploy to ${{ inputs.environment }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      if: ${{ inputs.dry-run == false && steps.detect-push-environment.outputs.match != '' }}
+      if: ${{ inputs.dry-run == 'false' && steps.detect-push-environment.outputs.match != '' }}
       run: |
         DEPLOY_BRANCH="${DEPLOY_BRANCH}"
         if ! git diff --quiet origin/${DEPLOY_BRANCH} ; then
@@ -238,7 +238,7 @@ runs:
     - name: Open Deployment PR to ${{ inputs.environment }}
       id: open-pr
       uses: peter-evans/create-pull-request@v4
-      if: ${{ inputs.dry-run == false && steps.detect-pr-environment.outputs.match != '' }}
+      if: ${{ inputs.dry-run == 'false' && steps.detect-pr-environment.outputs.match != '' }}
       with:
         title: Deployment to ${{ inputs.environment }}
         commit-message: ${{ github.event.head_commit.message }}
