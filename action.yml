@@ -46,10 +46,10 @@ runs:
       run: |
         DEPLOY_REPO_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
         echo "DEPLOY_REPO_URL=${DEPLOY_REPO_URL}" >> $GITHUB_ENV
-        
+
         DEPLOY_BRANCH="env/${{ inputs.environment }}"
         echo "DEPLOY_BRANCH=${DEPLOY_BRANCH}" >> $GITHUB_ENV
-        
+
         set +e
         if git branch -r --contains "origin/deploy-pr/env/${{ inputs.environment }}"; then
           DIFF_BRANCH="deploy-pr/env/${{ inputs.environment }}"
@@ -70,13 +70,13 @@ runs:
       with:
         text: ${{ inputs.environment }}
         regex: inputs.push-environment-regex
-        
+
     - uses: actions-ecosystem/action-regex-match@v2
       id: detect-pr-environment
       with:
         text: ${{ inputs.environment }}
         regex: inputs.pr-environment-regex
-        
+
     # Kustomize setup (this should be abstracted into a separate action repo)
     - name: Kustomize Setup
       uses: kustomize-everything/action-kustomize@main
@@ -143,12 +143,12 @@ runs:
         if ! git diff --quiet origin/${DIFF_BRANCH} ; then
           if [ -n "${{ inputs.git-commit-message }}" ]; then
             git commit -m "${{ inputs.git-commit-message }}
-            
+
             skip-checks: true
             "
           else
             git commit -m "${{ github.event.head_commit.message }}
-                        
+
             skip-checks: true
             "
           fi
@@ -171,7 +171,7 @@ runs:
         fi
 
     - name: Find Comment
-      if: ${{ github.event_name == "pull_request" }}
+      if: github.event_name == 'pull_request'
       uses: peter-evans/find-comment@v2
       id: fc
       with:
@@ -218,11 +218,11 @@ runs:
 
           To large to display in a comment. Please [check the logs](${{env.RUN_URL}}).
         edit-mode: replace
-        
+
     - name: Deploy to ${{ inputs.environment }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      if: ${{ dry-run == false && steps.detect-push-environment.outputs.match != '' }}
+      if: ${{ inputs.dry-run == false && steps.detect-push-environment.outputs.match != '' }}
       run: |
         DEPLOY_BRANCH="${DEPLOY_BRANCH}"
         if ! git diff --quiet origin/${DEPLOY_BRANCH} ; then
@@ -231,18 +231,18 @@ runs:
         else
           echo "There are no changes to push to ${DEPLOY_BRANCH} branch."
         fi
-        
+
     - name: Open Deployment PR to ${{ inputs.environment }}
       id: open-pr
       uses: peter-evans/create-pull-request@v4
-      if: ${{ dry-run == false && steps.detect-pr-environment.outputs.match != '' }}
+      if: ${{ inputs.dry-run == false && steps.detect-pr-environment.outputs.match != '' }}
       with:
         title: Deployment to ${{ inputs.environment }}
         commit-message: ${{ github.event.head_commit.message }}
         base: ${{ env.DEPLOY_BRANCH }}
         branch: deploy-pr/${{ env.DEPLOY_BRANCH }}
         path: ${{ inputs.working-directory }}
-        
+
     - name: PR Opened or Updated
       if: ${{ steps.open-pr.outputs.pull-request-number && (steps.open-pr.outputs.pull-request-operation == 'created' || steps.open-pr.outputs.pull-request-operation == 'updated') }}
       shell: bash
