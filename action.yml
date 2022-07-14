@@ -72,13 +72,13 @@ runs:
       id: detect-push-environment
       with:
         text: ${{ inputs.environment }}
-        regex: inputs.push-environment-regex
+        regex: ${{ inputs.push-environment-regex }}
 
     - uses: actions-ecosystem/action-regex-match@v2
       id: detect-pr-environment
       with:
         text: ${{ inputs.environment }}
-        regex: inputs.pr-environment-regex
+        regex: ${{ inputs.pr-environment-regex }}
 
     # Kustomize setup (this should be abstracted into a separate action repo)
     - name: Kustomize Setup
