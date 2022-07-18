@@ -53,6 +53,9 @@ runs:
         DEPLOY_BRANCH="env/${{ inputs.environment }}"
         echo "DEPLOY_BRANCH=${DEPLOY_BRANCH}" >> $GITHUB_ENV
 
+        ENV_DIR="env/${{ inputs.environment }}"
+        echo "ENV_DIR=${ENV_DIR}" >> $GITHUB_ENV
+
         set +e
         if git branch -r --contains "origin/deploy-pr/env/${{ inputs.environment }}"; then
           DIFF_BRANCH="deploy-pr/env/${{ inputs.environment }}"
@@ -99,7 +102,7 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         # Automatically add meta annotations at build-time
-        pushd ${DEPLOY_BRANCH} || exit 1
+        pushd ${ENV_DIR} || exit 1
         kustomize edit add annotation deployment-branch:"${DEPLOY_BRANCH}"
         kustomize edit add annotation deployment-branch-url:"${DEPLOY_BRANCH_URL}"
         kustomize edit add annotation deployment-repo:"${GITHUB_REPOSITORY}"
@@ -107,7 +110,7 @@ runs:
         kustomize edit add buildmetadata originAnnotations,managedByLabel
         popd || exit 1
 
-        kustomize build --enable-helm ${DEPLOY_BRANCH} > /tmp/all.yaml
+        kustomize build --enable-helm ${ENV_DIR} > /tmp/all.yaml
 
         pushd /tmp || exit 1
         yq -s '.kind + "-" + (.apiVersion | sub("\/", "_")) + "-" + .metadata.name' < all.yaml
@@ -122,6 +125,8 @@ runs:
           git rm -rf --ignore-unmatch '*'
           # Ensure that branch will not be polluted with unrendered YAML
           rm -rf base/ env/
+          echo "What is in this directory?"
+          ls -R
           git commit --allow-empty -m "Initial Commit"
           git push origin ${DEPLOY_BRANCH}
         fi
