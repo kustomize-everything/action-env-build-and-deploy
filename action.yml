@@ -117,27 +117,25 @@ runs:
         # Must reset to clear build-time annotations
         git reset --hard
 
-        if ! git checkout ${DIFF_BRANCH} -- ; then
-          git checkout --orphan ${DIFF_BRANCH}
+        if ! git checkout ${DEPLOY_BRANCH} -- ; then
+          git checkout --orphan ${DEPLOY_BRANCH}
           git rm -rf --ignore-unmatch '*'
           # Ensure that branch will not be polluted with unrendered YAML
           rm -rf base/ env/
-          cp /tmp/*.y*ml .
-          git add --all -fv *.y*ml
           git commit --allow-empty -m "Initial Commit"
-        else
-          echo "Cleaning staging area..."
-          git rm -rf --ignore-unmatch '*'
-          # Ensure that branch will not be polluted with unrendered YAML
-          rm -rf base/ env/
-          echo "Post-staging cleanup status:"
-          git status
-          echo "Moving built k8s-manifests into staging area..."
-          cp /tmp/*.y*ml .
-          git add --all -fv *.y*ml
-          echo "Changed manifests:"
-          git status
         fi
+
+        echo "Cleaning staging area..."
+        git rm -rf --ignore-unmatch '*'
+        # Ensure that branch will not be polluted with unrendered YAML
+        rm -rf base/ env/
+        echo "Post-staging cleanup status:"
+        git status
+        echo "Moving built k8s-manifests into staging area..."
+        cp /tmp/*.y*ml .
+        git add --all -fv *.y*ml
+        echo "Changed manifests:"
+        git status
 
     - name: Git commit and diff against ${DIFF_BRANCH}
       shell: bash
