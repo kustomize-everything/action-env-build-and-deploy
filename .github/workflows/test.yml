@@ -21,13 +21,13 @@ jobs:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
           ref: main
-          path: test-deploy-reset
+          path: test-deploy
           ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
 
       - name: Reset testing repo to known state
         shell: bash
         run: |-
-          cd test-deploy-reset
+          cd test-deploy
           BRANCH="pr/${GITHUB_SHA}"
           echo "BRANCH=${BRANCH}" >> $GITHUB_ENV
           git checkout -B ${BRANCH}
@@ -37,5 +37,5 @@ jobs:
       - name: Action Test with Defaults
         uses: ./
         with:
-          environment: env/dev
+          environment: dev
           working-directory: test-deploy
