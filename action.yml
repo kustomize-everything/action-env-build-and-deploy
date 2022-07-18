@@ -82,7 +82,7 @@ runs:
 
     # Kustomize setup (this should be abstracted into a separate action repo)
     - name: Kustomize Setup
-      uses: kustomize-everything/action-kustomize@v1.0.1
+      uses: kustomize-everything/action-kustomize@v1
       with:
         version: ${{ inputs.version }}
         sha256-checksum: ${{ inputs.sha256-checksum }}
