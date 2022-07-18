@@ -146,7 +146,7 @@ runs:
       id: diff
       working-directory: ${{ inputs.working-directory }}
       run: |
-        if ! git diff --quiet ${DIFF_BRANCH} origin/${DIFF_BRANCH} ; then
+        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
           if [ -n "${{ inputs.git-commit-message }}" ]; then
             git commit -m "${{ inputs.git-commit-message }}
 
