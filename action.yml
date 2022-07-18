@@ -125,8 +125,6 @@ runs:
           git rm -rf --ignore-unmatch '*'
           # Ensure that branch will not be polluted with unrendered YAML
           rm -rf base/ env/
-          echo "What is in this directory?"
-          ls -R
           git commit --allow-empty -m "Initial Commit"
           git push origin ${DEPLOY_BRANCH}
         fi
