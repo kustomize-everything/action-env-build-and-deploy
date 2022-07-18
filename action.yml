@@ -169,6 +169,7 @@ runs:
           echo
           echo "Bytes: ${bytes}"
           echo "::set-output name=diff-bytes::$bytes"
+          rm git-diff
         else
           echo "There are no changes to push to the ${DIFF_BRANCH} branch."
         fi
