@@ -123,8 +123,12 @@ runs:
           # Ensure that branch will not be polluted with unrendered YAML
           rm -rf base/ env/
           git commit --allow-empty -m "Initial Commit"
+          git push origin ${DEPLOY_BRANCH}
         fi
 
+        if ! git checkout ${DIFF_BRANCH} -- ; then
+          git checkout -B ${DIFF_BRANCH}
+        fi
         echo "Cleaning staging area..."
         git rm -rf --ignore-unmatch '*'
         # Ensure that branch will not be polluted with unrendered YAML
@@ -142,7 +146,7 @@ runs:
       id: diff
       working-directory: ${{ inputs.working-directory }}
       run: |
-        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
+        if ! git diff --quiet origin/${DEPLOY_BRANCH} origin/${DIFF_BRANCH} ; then
           if [ -n "${{ inputs.git-commit-message }}" ]; then
             git commit -m "${{ inputs.git-commit-message }}
 
