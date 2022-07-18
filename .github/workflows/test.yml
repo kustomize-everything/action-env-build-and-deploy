@@ -34,8 +34,15 @@ jobs:
           git reset --hard 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
           git push origin ${BRANCH} -f
 
-      - name: Action Test with Defaults
+      - name: Action Test with Defaults (diff only)
         uses: ./
         with:
+          environment: dev
+          working-directory: test-deploy
+
+      - name: Action Test with dry-run false (pushes branch)
+        uses: ./
+        with:
+          dry-run: "false"
           environment: dev
           working-directory: test-deploy
