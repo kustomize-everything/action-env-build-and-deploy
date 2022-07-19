@@ -33,9 +33,9 @@ git checkout "${DEPLOY_BRANCH}"
 
 set +e
 if git ls-remote --exit-code --heads origin "${PUSH_BRANCH}"; then
-  git checkout "${PUSH_BRANCH}" -u "origin/${PUSH_BRANCH}"
+  git checkout "${PUSH_BRANCH}"
 else
-  git checkout -B "${PUSH_BRANCH}" -u "origin/${PUSH_BRANCH}"
+  git checkout -B "${PUSH_BRANCH}"
 fi
 set -e
 
