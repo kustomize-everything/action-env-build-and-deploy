@@ -31,13 +31,7 @@ fi
 # Base changes off the branch being deployed to
 git checkout "${DEPLOY_BRANCH}"
 
-set +e
-if git ls-remote --exit-code --heads origin "${PUSH_BRANCH}"; then
-  git checkout --no-guess "${PUSH_BRANCH}" --track "origin/${PUSH_BRANCH}"
-else
-  git checkout -B --no-guess "${PUSH_BRANCH}" --track "origin/${PUSH_BRANCH}"
-fi
-set -e
+git checkout -B "${PUSH_BRANCH}" --set-upstream-to "origin/${PUSH_BRANCH}"
 
 echo "Cleaning staging area..."
 git rm -rf --ignore-unmatch '*'
