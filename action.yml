@@ -42,34 +42,16 @@ inputs:
 runs:
   using: composite
   steps:
+    - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
+      shell: bash
+
     # These variables are re-used by the run steps.
     - name: Shared ENV Setup
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: |
-        DEPLOY_REPO_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
-        echo "DEPLOY_REPO_URL=${DEPLOY_REPO_URL}" >> $GITHUB_ENV
-
-        DEPLOY_BRANCH="env/${{ inputs.environment }}"
-        echo "DEPLOY_BRANCH=${DEPLOY_BRANCH}" >> $GITHUB_ENV
-
-        ENV_DIR="env/${{ inputs.environment }}"
-        echo "ENV_DIR=${ENV_DIR}" >> $GITHUB_ENV
-
-        set +e
-        if git branch -r --contains "origin/deploy-pr/env/${{ inputs.environment }}"; then
-          DIFF_BRANCH="deploy-pr/env/${{ inputs.environment }}"
-        else
-          DIFF_BRANCH="env/${{ inputs.environment }}"
-        fi
-        set -e
-        echo "DIFF_BRANCH=${DIFF_BRANCH}" >> $GITHUB_ENV
-
-        DEPLOY_BRANCH_URL="${DEPLOY_REPO_URL}/tree/${DEPLOY_BRANCH}"
-        echo "DEPLOY_BRANCH_URL=${DEPLOY_BRANCH_URL}" >> $GITHUB_ENV
-
-        RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-        echo "RUN_URL=${RUN_URL}" >> $GITHUB_ENV
+      env:
+        ENV: ${{ inputs.environment }}
+      run: setup-shared-env.sh
 
     - uses: actions-ecosystem/action-regex-match@v2
       id: detect-push-environment
