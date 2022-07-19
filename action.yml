@@ -98,6 +98,11 @@ runs:
         GIT_HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
       run: commit-and-diff.sh
 
+    - name: Git Diff
+      shell: bash
+      run: |
+        git diff origin/${DIFF_BRANCH}
+
     - name: Find Comment
       if: github.event_name == 'pull_request'
       uses: peter-evans/find-comment@v2
@@ -168,6 +173,20 @@ runs:
           echo "There are no changes to push to ${DEPLOY_BRANCH} branch."
         fi
 
+    - name: Force Push PR branch for ${{ inputs.environment }}
+      id: force-push-pr-branch
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      if: ${{ inputs.dry-run == 'false' &&
+        steps.detect-pr-environment.outputs.match != '' }}
+      run: |
+        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
+          git push --set-upstream -f origin ${DIFF_BRANCH}
+          echo "Changes pushed to ${DIFF_BRANCH} branch."
+        else
+          echo "There are no changes to push to ${DIFF_BRANCH} branch."
+        fi
+
     - name: Open Deployment PR to ${{ inputs.environment }}
       id: open-pr
       uses: peter-evans/create-pull-request@v4
@@ -177,7 +196,8 @@ runs:
         title: Deployment to ${{ inputs.environment }}
         commit-message: ${{ github.event.head_commit.message }}
         base: ${{ env.DEPLOY_BRANCH }}
-        branch: deploy-pr/${{ env.DEPLOY_BRANCH }}
+        branch: ${{ env.DIFF_BRANCH }}
+        delete-branch: true
         path: ${{ inputs.working-directory }}
 
     - name: PR Opened or Updated
