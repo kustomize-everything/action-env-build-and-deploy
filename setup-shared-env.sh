@@ -22,10 +22,10 @@ DEPLOY_BRANCH_URL="${DEPLOY_REPO_URL}/tree/${DEPLOY_BRANCH}"
 echo "DEPLOY_BRANCH_URL=${DEPLOY_BRANCH_URL}" >> "${GITHUB_ENV}"
 
 if [[ -n "${PUSH_ENVIRONMENT_REGEX}" ]]; then
-  DEPLOY_METHOD="pull-request"
+  DEPLOY_METHOD="push"
   PUSH_BRANCH="env/${ENV}"
 elif [[ -n "${PR_ENVIRONMENT_REGEX}" ]]; then
-  DEPLOY_METHOD="push"
+  DEPLOY_METHOD="pull-request"
   PUSH_BRANCH="deploy-pr/env/${ENV}"
 else
   echo "Environment ${ENV} did not match any of the provided push or PR regexes."
