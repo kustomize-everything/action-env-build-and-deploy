@@ -19,7 +19,7 @@ popd || exit 1
 # Must reset to clear build-time annotations
 git reset --hard
 
-if ! git ls-remote --exit-code --heads origin/"${DEPLOY_BRANCH}"; then
+if ! git ls-remote --exit-code --heads origin "${DEPLOY_BRANCH}"; then
   git checkout --orphan "${DEPLOY_BRANCH}"
   git rm -rf --ignore-unmatch '*'
   # Ensure that branch will not be polluted with unrendered YAML
@@ -32,10 +32,10 @@ fi
 git checkout "${DEPLOY_BRANCH}"
 
 set +e
-if git ls-remote --exit-code --heads origin/"${PUSH_BRANCH}"; then
-  git checkout "${PUSH_BRANCH}"
+if git ls-remote --exit-code --heads origin "${PUSH_BRANCH}"; then
+  git checkout "${PUSH_BRANCH}" -u "origin/${PUSH_BRANCH}"
 else
-  git checkout -B "${PUSH_BRANCH}"
+  git checkout -B "${PUSH_BRANCH}" -u "origin/${PUSH_BRANCH}"
 fi
 set -e
 
