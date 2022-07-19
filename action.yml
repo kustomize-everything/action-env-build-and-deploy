@@ -100,6 +100,7 @@ runs:
 
     - name: Git Diff
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
         git diff origin/${DIFF_BRANCH}
 
