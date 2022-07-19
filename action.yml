@@ -184,7 +184,7 @@ runs:
         commit-message: ${{ github.event.head_commit.message }}
         base: ${{ env.DEPLOY_BRANCH }}
         branch: ${{ env.PUSH_BRANCH }}
-        delete-branch: false
+        delete-branch: true
         path: ${{ inputs.working-directory }}
 
     - name: PR Opened or Updated
