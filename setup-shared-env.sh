@@ -21,11 +21,15 @@ echo "DIFF_BRANCH=${DIFF_BRANCH}" >> "${GITHUB_ENV}"
 DEPLOY_BRANCH_URL="${DEPLOY_REPO_URL}/tree/${DEPLOY_BRANCH}"
 echo "DEPLOY_BRANCH_URL=${DEPLOY_BRANCH_URL}" >> "${GITHUB_ENV}"
 
-if [[ "${PROMOTION_METHOD}" == "pull-request" ]]; then
+if [[ -n "${PUSH_ENVIRONMENT_REGEX}" ]]; then
+  DEPLOY_METHOD="pull-request"
   PUSH_BRANCH="deploy-pr/env/${ENV}"
-elif [[ "${PROMOTION_METHOD}" == "push" ]]; then
+elif [[ -n "${PR_ENVIRONMENT_REGEX}" ]]; then
+  DEPLOY_METHOD="push"
   PUSH_BRANCH="env/${ENV}"
 fi
+
+echo "DEPLOY_METHOD=${DEPLOY_METHOD}" >> "${GITHUB_ENV}"
 echo "PUSH_BRANCH=${PUSH_BRANCH}" >> "${GITHUB_ENV}"
 
 RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"

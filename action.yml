@@ -50,14 +50,6 @@ runs:
     - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
       shell: bash
 
-    # These variables are re-used by the run steps.
-    - name: Shared ENV Setup
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-      env:
-        ENV: ${{ inputs.environment }}
-      run: setup-shared-env.sh
-
     - uses: actions-ecosystem/action-regex-match@v2
       id: detect-push-environment
       with:
@@ -69,6 +61,16 @@ runs:
       with:
         text: ${{ inputs.environment }}
         regex: ${{ inputs.pr-environment-regex }}
+
+    # These variables are re-used by the run steps.
+    - name: Shared ENV Setup
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        ENV: ${{ inputs.environment }}
+        PUSH_ENVIRONMENT_REGEX: ${{ steps.detect-push-environment.outputs.match }}
+        PR_ENVIRONMENT_REGEX: ${{ steps.detect-pr-environment.outputs.match }}
+      run: setup-shared-env.sh
 
     # Kustomize setup (this should be abstracted into a separate action repo)
     - name: Kustomize Setup
@@ -176,7 +178,7 @@ runs:
       id: open-pr
       uses: peter-evans/create-pull-request@v4
       if: ${{ inputs.dry-run == 'false' &&
-        steps.detect-pr-environment.outputs.match != '' }}
+        env.DEPLOY_METHOD == 'pull-request' }}
       with:
         title: Deployment to ${{ inputs.environment }}
         commit-message: ${{ github.event.head_commit.message }}
