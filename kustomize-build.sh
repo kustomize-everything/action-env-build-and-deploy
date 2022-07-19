@@ -31,7 +31,7 @@ fi
 # Base changes off the branch being deployed to
 git checkout "${DEPLOY_BRANCH}"
 
-git checkout -B "${PUSH_BRANCH}" --set-upstream-to "origin/${PUSH_BRANCH}"
+git checkout -B "${PUSH_BRANCH}"
 
 echo "Cleaning staging area..."
 git rm -rf --ignore-unmatch '*'
