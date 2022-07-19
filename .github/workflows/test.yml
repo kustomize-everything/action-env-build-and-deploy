@@ -21,18 +21,29 @@ jobs:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
           ref: main
-          path: test-deploy
+          path: test-deploy-reset
           ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
 
       - name: Reset testing repo to known state
+        id: reset
         shell: bash
         run: |-
-          cd test-deploy
+          cd test-deploy-reset
           BRANCH="pr/${GITHUB_SHA}"
+          echo "::set-output branch=$BRANCH"
           echo "BRANCH=${BRANCH}" >> $GITHUB_ENV
           git checkout -B ${BRANCH}
           git reset --hard 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
           git push origin ${BRANCH} -f
+
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          ref: ${{ steps.reset.output.branch }}
+          path: test-deploy
+          ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
 
       - name: Action Test with Defaults (diff only)
         uses: ./
@@ -43,12 +54,17 @@ jobs:
       - name: Reset testing repo to known state
         shell: bash
         run: |-
-          cd test-deploy
-          BRANCH="pr/${GITHUB_SHA}"
-          echo "BRANCH=${BRANCH}" >> $GITHUB_ENV
-          git checkout -B ${BRANCH}
-          git reset --hard 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
-          git push origin ${BRANCH} -f
+          cd test-deploy-reset
+          git push --delete origin env/dev
+
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          ref: ${{ steps.reset.output.branch }}
+          path: test-deploy
+          ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
 
       - name: Action Test with dry-run false (pushes branch)
         uses: ./
@@ -56,3 +72,9 @@ jobs:
           dry-run: "false"
           environment: dev
           working-directory: test-deploy
+
+      - name: Reset testing repo to known state
+        shell: bash
+        run: |-
+          cd test-deploy-reset
+          git push --delete origin env/dev
