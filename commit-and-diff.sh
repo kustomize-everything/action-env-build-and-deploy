@@ -28,5 +28,6 @@ if ! git diff --quiet "origin/${DIFF_BRANCH}" --; then
   echo "::set-output name=diff-bytes::$bytes"
   rm git-diff
 else
-  echo "There are no changes to push to the ${PUSH_BRANCH} branch."
+  echo "There are no changes to push to the ${PUSH_BRANCH} branch when
+    compared with origin/${DIFF_BRANCH}."
 fi
