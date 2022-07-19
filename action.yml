@@ -50,14 +50,6 @@ runs:
     - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
       shell: bash
 
-    # These variables are re-used by the run steps.
-    - name: Shared ENV Setup
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-      env:
-        ENV: ${{ inputs.environment }}
-      run: setup-shared-env.sh
-
     - uses: actions-ecosystem/action-regex-match@v2
       id: detect-push-environment
       with:
@@ -69,6 +61,16 @@ runs:
       with:
         text: ${{ inputs.environment }}
         regex: ${{ inputs.pr-environment-regex }}
+
+    # These variables are re-used by the run steps.
+    - name: Shared ENV Setup
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        ENV: ${{ inputs.environment }}
+        PUSH_ENVIRONMENT_REGEX: ${{ steps.detect-push-environment.outputs.match }}
+        PR_ENVIRONMENT_REGEX: ${{ steps.detect-pr-environment.outputs.match }}
+      run: setup-shared-env.sh
 
     # Kustomize setup (this should be abstracted into a separate action repo)
     - name: Kustomize Setup
@@ -97,6 +99,12 @@ runs:
         GIT_COMMIT_MESSAGE: ${{ inputs.git-commit-message }}
         GIT_HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
       run: commit-and-diff.sh
+
+    - name: Git Diff
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        git diff origin/${DIFF_BRANCH}
 
     - name: Find Comment
       if: github.event_name == 'pull_request'
@@ -154,30 +162,32 @@ runs:
           Please [check the logs](${{env.RUN_URL}}).
         edit-mode: replace
 
-    - name: Deploy to ${{ inputs.environment }}
+    - name: Push to ${{ env.PUSH_BRANCH }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      if: ${{ inputs.dry-run == 'false' &&
-        steps.detect-push-environment.outputs.match != '' }}
+      if: ${{ inputs.dry-run == 'false' }}
       run: |
-        DEPLOY_BRANCH="${DEPLOY_BRANCH}"
-        if ! git diff --quiet origin/${DEPLOY_BRANCH} ; then
-          git push --set-upstream -f origin ${DEPLOY_BRANCH}
-          echo "Changes pushed to ${DEPLOY_BRANCH} branch."
+        git branch
+        git log
+        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
+          git push origin ${PUSH_BRANCH}
+          echo "Changes pushed to ${PUSH_BRANCH} branch."
         else
-          echo "There are no changes to push to ${DEPLOY_BRANCH} branch."
+          echo "There are no changes to push to ${PUSH_BRANCH} branch when
+            compared with origin/${DIFF_BRANCH}."
         fi
 
     - name: Open Deployment PR to ${{ inputs.environment }}
       id: open-pr
       uses: peter-evans/create-pull-request@v4
       if: ${{ inputs.dry-run == 'false' &&
-        steps.detect-pr-environment.outputs.match != '' }}
+        env.DEPLOY_METHOD == 'pull-request' }}
       with:
         title: Deployment to ${{ inputs.environment }}
         commit-message: ${{ github.event.head_commit.message }}
         base: ${{ env.DEPLOY_BRANCH }}
-        branch: deploy-pr/${{ env.DEPLOY_BRANCH }}
+        branch: ${{ env.PUSH_BRANCH }}
+        delete-branch: false
         path: ${{ inputs.working-directory }}
 
     - name: PR Opened or Updated

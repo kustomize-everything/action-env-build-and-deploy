@@ -19,7 +19,7 @@ popd || exit 1
 # Must reset to clear build-time annotations
 git reset --hard
 
-if ! git checkout "${DEPLOY_BRANCH}" -- ; then
+if ! git ls-remote --exit-code --heads origin "${DEPLOY_BRANCH}"; then
   git checkout --orphan "${DEPLOY_BRANCH}"
   git rm -rf --ignore-unmatch '*'
   # Ensure that branch will not be polluted with unrendered YAML
@@ -28,9 +28,11 @@ if ! git checkout "${DEPLOY_BRANCH}" -- ; then
   git push origin "${DEPLOY_BRANCH}"
 fi
 
-if ! git checkout "${DIFF_BRANCH}" -- ; then
-  git checkout -B "${DIFF_BRANCH}"
-fi
+# Base changes off the branch being deployed to
+git checkout "${DEPLOY_BRANCH}" --
+
+git checkout -B "${PUSH_BRANCH}" --
+
 echo "Cleaning staging area..."
 git rm -rf --ignore-unmatch '*'
 # Ensure that branch will not be polluted with unrendered YAML
@@ -40,5 +42,3 @@ git status
 echo "Moving built k8s-manifests into staging area..."
 cp /tmp/*.y*ml .
 git add --all -fv ./*.y*ml
-echo "Changed manifests:"
-git status

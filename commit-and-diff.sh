@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if ! git diff --quiet "origin/${DIFF_BRANCH}" ; then
+if ! git diff --quiet "origin/${DIFF_BRANCH}" --; then
   if [ -n "${GIT_COMMIT_MESSAGE}" ]; then
     git commit -m "${GIT_COMMIT_MESSAGE}
 
@@ -12,7 +12,7 @@ if ! git diff --quiet "origin/${DIFF_BRANCH}" ; then
     skip-checks: true
     "
   fi
-  git diff "origin/${DIFF_BRANCH}" > git-diff
+  git diff "origin/${DIFF_BRANCH}" -- > git-diff
   echo "git diff origin/${DIFF_BRANCH}:"
   cat git-diff
   diff="$(cat git-diff)"
@@ -28,5 +28,6 @@ if ! git diff --quiet "origin/${DIFF_BRANCH}" ; then
   echo "::set-output name=diff-bytes::$bytes"
   rm git-diff
 else
-  echo "There are no changes to push to the ${DIFF_BRANCH} branch."
+  echo "There are no changes to push to the ${PUSH_BRANCH} branch when
+    compared with origin/${DIFF_BRANCH}."
 fi
