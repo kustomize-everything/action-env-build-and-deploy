@@ -60,6 +60,7 @@ jobs:
         uses: ./
         with:
           environment: dev
+          push-environment-regex: dev
           working-directory: test-deploy
 
       - name: Reset testing repo to known state
@@ -82,4 +83,5 @@ jobs:
         with:
           dry-run: "false"
           environment: dev
+          push-environment-regex: dev
           working-directory: test-deploy
