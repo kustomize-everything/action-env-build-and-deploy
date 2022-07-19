@@ -72,3 +72,9 @@ jobs:
           dry-run: "false"
           environment: dev
           working-directory: test-deploy
+
+      - name: Reset testing repo to known state
+        shell: bash
+        run: |-
+          cd test-deploy-reset
+          git push --delete origin env/dev
