@@ -173,7 +173,8 @@ runs:
           git push origin ${PUSH_BRANCH}
           echo "Changes pushed to ${PUSH_BRANCH} branch."
         else
-          echo "There are no changes to push to ${PUSH_BRANCH} branch."
+          echo "There are no changes to push to ${PUSH_BRANCH} branch when
+            compared with origin/${DIFF_BRANCH}."
         fi
 
     - name: Open Deployment PR to ${{ inputs.environment }}
@@ -187,6 +188,7 @@ runs:
         base: ${{ env.DEPLOY_BRANCH }}
         branch: ${{ env.PUSH_BRANCH }}
         delete-branch: false
+        path: ${{ inputs.working-directory }}
 
     - name: PR Opened or Updated
       if: ${{ steps.open-pr.outputs.pull-request-number &&
