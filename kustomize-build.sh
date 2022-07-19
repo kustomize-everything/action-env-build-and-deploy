@@ -29,10 +29,10 @@ if ! git ls-remote --exit-code --heads origin/"${DEPLOY_BRANCH}"; then
 fi
 
 set +e
-if git ls-remote --exit-code --heads origin/"${DIFF_BRANCH}"; then
-  git checkout "${DIFF_BRANCH}"
+if git ls-remote --exit-code --heads origin/"${PUSH_BRANCH}"; then
+  git checkout "${PUSH_BRANCH}"
 else
-  git checkout -B "${DIFF_BRANCH}"
+  git checkout -B "${PUSH_BRANCH}"
 fi
 set -e
 

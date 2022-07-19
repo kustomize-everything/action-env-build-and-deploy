@@ -160,32 +160,16 @@ runs:
           Please [check the logs](${{env.RUN_URL}}).
         edit-mode: replace
 
-    - name: Deploy to ${{ inputs.environment }}
+    - name: Push to ${{ env.PUSH_BRANCH }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      if: ${{ inputs.dry-run == 'false' &&
-        steps.detect-push-environment.outputs.match != '' }}
+      if: ${{ inputs.dry-run == 'false' }}
       run: |
-        DEPLOY_BRANCH="${DEPLOY_BRANCH}"
-        if ! git diff --quiet origin/${DEPLOY_BRANCH} ; then
-          git push --set-upstream -f origin ${DEPLOY_BRANCH}
-          echo "Changes pushed to ${DEPLOY_BRANCH} branch."
+        if ! git diff --quiet origin/${PUSH_BRANCH} ; then
+          git push --set-upstream -f origin ${PUSH_BRANCH}
+          echo "Changes pushed to ${PUSH_BRANCH} branch."
         else
-          echo "There are no changes to push to ${DEPLOY_BRANCH} branch."
-        fi
-
-    - name: Force Push PR branch for ${{ inputs.environment }}
-      id: force-push-pr-branch
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-      if: ${{ inputs.dry-run == 'false' &&
-        steps.detect-pr-environment.outputs.match != '' }}
-      run: |
-        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
-          git push --set-upstream -f origin ${DIFF_BRANCH}
-          echo "Changes pushed to ${DIFF_BRANCH} branch."
-        else
-          echo "There are no changes to push to ${DIFF_BRANCH} branch."
+          echo "There are no changes to push to ${PUSH_BRANCH} branch."
         fi
 
     - name: Open Deployment PR to ${{ inputs.environment }}
@@ -197,7 +181,7 @@ runs:
         title: Deployment to ${{ inputs.environment }}
         commit-message: ${{ github.event.head_commit.message }}
         base: ${{ env.DEPLOY_BRANCH }}
-        branch: ${{ env.DIFF_BRANCH }}
+        branch: ${{ env.PUSH_BRANCH }}
         delete-branch: true
         path: ${{ inputs.working-directory }}
 
