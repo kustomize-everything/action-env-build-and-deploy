@@ -30,7 +30,6 @@ jobs:
           cd test-deploy-reset
           BRANCH="pr/${GITHUB_SHA}"
           echo "BRANCH=${BRANCH}" >> $GITHUB_ENV
-          git push --delete origin env/dev
           git checkout -B ${BRANCH}
           git reset --hard 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
           git push origin ${BRANCH} -f
@@ -44,13 +43,7 @@ jobs:
       - name: Reset testing repo to known state
         shell: bash
         run: |-
-          cd test-deploy-reset
-          BRANCH="pr/${GITHUB_SHA}"
-          echo "BRANCH=${BRANCH}" >> $GITHUB_ENV
           git push --delete origin env/dev
-          git checkout -B ${BRANCH}
-          git reset --hard 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
-          git push origin ${BRANCH} -f
 
       - name: Action Test with dry-run false (pushes branch)
         uses: ./
