@@ -28,6 +28,9 @@ if ! git ls-remote --exit-code --heads origin/"${DEPLOY_BRANCH}"; then
   git push origin "${DEPLOY_BRANCH}"
 fi
 
+# Base changes off the branch being deployed to
+git checkout "${DEPLOY_BRANCH}"
+
 set +e
 if git ls-remote --exit-code --heads origin/"${PUSH_BRANCH}"; then
   git checkout "${PUSH_BRANCH}"
