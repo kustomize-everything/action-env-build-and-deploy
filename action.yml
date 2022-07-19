@@ -187,7 +187,6 @@ runs:
         base: ${{ env.DEPLOY_BRANCH }}
         branch: ${{ env.PUSH_BRANCH }}
         delete-branch: false
-        path: ${{ inputs.working-directory }}
 
     - name: PR Opened or Updated
       if: ${{ steps.open-pr.outputs.pull-request-number &&
