@@ -1,3 +1,4 @@
+---
 name: Testing
 on:
   push:
@@ -23,6 +24,16 @@ jobs:
           ref: main
           path: test-deploy-reset
           ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
+
+      - name: Delete env/dev branch if it exists
+        shell: bash
+        run: |
+          cd test-deploy-reset
+          set +e
+          if git ls-remote --exit-code --heads origin; then
+            git push --delete origin env/dev
+          fi
+          set -e
 
       - name: Reset testing repo to known state
         id: reset
@@ -72,9 +83,3 @@ jobs:
           dry-run: "false"
           environment: dev
           working-directory: test-deploy
-
-      - name: Reset testing repo to known state
-        shell: bash
-        run: |-
-          cd test-deploy-reset
-          git push --delete origin env/dev

@@ -1,6 +1,7 @@
 ---
 name: env-build-and-deploy
-description: Uses kustomize to build and commit to an environment branch or opens a PR
+description: |
+  Uses kustomize to build and commit to an environment branch or opens a PR
 inputs:
   environment:
     description: The environment to build and deploy or open/update a PR for
@@ -10,11 +11,15 @@ inputs:
     required: false
     default: .*(development|integration).*
   pr-environment-regex:
-    description: Regex to match environments which will push to a deploy-pr/env/<environment> branch and open a PR for review
+    description: |
+      Regex to match environments which will push to a
+      deploy-pr/env/<environment> branch and open a PR for review
     required: false
     default: .*(staging|production).*
   dry-run:
-    description: On a dry-run only the kustomize build will occur and the built branch will not be pushed anywhere.
+    description: |
+      On a dry-run only the kustomize build will occur and the built branch will
+      not be pushed anywhere.
     required: false
     default: 'true'
   working-directory:
@@ -42,34 +47,16 @@ inputs:
 runs:
   using: composite
   steps:
+    - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
+      shell: bash
+
     # These variables are re-used by the run steps.
     - name: Shared ENV Setup
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: |
-        DEPLOY_REPO_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
-        echo "DEPLOY_REPO_URL=${DEPLOY_REPO_URL}" >> $GITHUB_ENV
-
-        DEPLOY_BRANCH="env/${{ inputs.environment }}"
-        echo "DEPLOY_BRANCH=${DEPLOY_BRANCH}" >> $GITHUB_ENV
-
-        ENV_DIR="env/${{ inputs.environment }}"
-        echo "ENV_DIR=${ENV_DIR}" >> $GITHUB_ENV
-
-        set +e
-        if git branch -r --contains "origin/deploy-pr/env/${{ inputs.environment }}"; then
-          DIFF_BRANCH="deploy-pr/env/${{ inputs.environment }}"
-        else
-          DIFF_BRANCH="env/${{ inputs.environment }}"
-        fi
-        set -e
-        echo "DIFF_BRANCH=${DIFF_BRANCH}" >> $GITHUB_ENV
-
-        DEPLOY_BRANCH_URL="${DEPLOY_REPO_URL}/tree/${DEPLOY_BRANCH}"
-        echo "DEPLOY_BRANCH_URL=${DEPLOY_BRANCH_URL}" >> $GITHUB_ENV
-
-        RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
-        echo "RUN_URL=${RUN_URL}" >> $GITHUB_ENV
+      env:
+        ENV: ${{ inputs.environment }}
+      run: setup-shared-env.sh
 
     - uses: actions-ecosystem/action-regex-match@v2
       id: detect-push-environment
@@ -85,7 +72,7 @@ runs:
 
     # Kustomize setup (this should be abstracted into a separate action repo)
     - name: Kustomize Setup
-      uses: kustomize-everything/action-kustomize@v1.0.3
+      uses: kustomize-everything/action-kustomize@v1.0.4
       with:
         version: ${{ inputs.version }}
         sha256-checksum: ${{ inputs.sha256-checksum }}
@@ -100,85 +87,16 @@ runs:
     - name: Kustomize Build
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: |
-        # Automatically add meta annotations at build-time
-        pushd ${ENV_DIR} || exit 1
-        kustomize edit add annotation deployment-branch:"${DEPLOY_BRANCH}"
-        kustomize edit add annotation deployment-branch-url:"${DEPLOY_BRANCH_URL}"
-        kustomize edit add annotation deployment-repo:"${GITHUB_REPOSITORY}"
-        kustomize edit add annotation deployment-repo-url:"${DEPLOY_REPO_URL}"
-        kustomize edit add buildmetadata originAnnotations,managedByLabel
-        popd || exit 1
-
-        kustomize build --enable-helm ${ENV_DIR} > /tmp/all.yaml
-
-        pushd /tmp || exit 1
-        yq -s '.kind + "-" + (.apiVersion | sub("\/", "_")) + "-" + .metadata.name' < all.yaml
-        rm all.yaml
-        popd || exit 1
-
-        # Must reset to clear build-time annotations
-        git reset --hard
-
-        if ! git checkout ${DEPLOY_BRANCH} -- ; then
-          git checkout --orphan ${DEPLOY_BRANCH}
-          git rm -rf --ignore-unmatch '*'
-          # Ensure that branch will not be polluted with unrendered YAML
-          rm -rf base/ env/
-          git commit --allow-empty -m "Initial Commit"
-          git push origin ${DEPLOY_BRANCH}
-        fi
-
-        if ! git checkout ${DIFF_BRANCH} -- ; then
-          git checkout -B ${DIFF_BRANCH}
-        fi
-        echo "Cleaning staging area..."
-        git rm -rf --ignore-unmatch '*'
-        # Ensure that branch will not be polluted with unrendered YAML
-        rm -rf base/ env/
-        echo "Post-staging cleanup status:"
-        git status
-        echo "Moving built k8s-manifests into staging area..."
-        cp /tmp/*.y*ml .
-        git add --all -fv *.y*ml
-        echo "Changed manifests:"
-        git status
+      run: kustomize-build.sh
 
     - name: Git commit and diff against ${DIFF_BRANCH}
       shell: bash
       id: diff
       working-directory: ${{ inputs.working-directory }}
-      run: |
-        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
-          if [ -n "${{ inputs.git-commit-message }}" ]; then
-            git commit -m "${{ inputs.git-commit-message }}
-
-            skip-checks: true
-            "
-          else
-            git commit -m "${{ github.event.head_commit.message }}
-
-            skip-checks: true
-            "
-          fi
-          git diff origin/${DIFF_BRANCH} > git-diff
-          echo "git diff origin/${DIFF_BRANCH}:"
-          cat git-diff
-          diff="$(cat git-diff)"
-          diff="${diff//'%'/'%25'}"
-          diff="${diff//$'\n'/'%0A'}"
-          diff="${diff//$'\r'/'%0D'}"
-          echo "::set-output name=diff::$diff"
-          echo "Diff:"
-          echo "${diff}"
-          bytes="$(wc -c < git-diff | tr -d ' \n')"
-          echo
-          echo "Bytes: ${bytes}"
-          echo "::set-output name=diff-bytes::$bytes"
-          rm git-diff
-        else
-          echo "There are no changes to push to the ${DIFF_BRANCH} branch."
-        fi
+      env:
+        GIT_COMMIT_MESSAGE: ${{ inputs.git-commit-message }}
+        GIT_HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+      run: commit-and-diff.sh
 
     - name: Find Comment
       if: github.event_name == 'pull_request'
@@ -190,7 +108,9 @@ runs:
         body-includes: Diff output against ${{env.DIFF_BRANCH}}
 
     - name: Create or update comment with No Changes
-      if: ${{ github.event_name == 'pull_request' && steps.fc.outputs.comment-id != 0 && steps.diff.outputs.diff-bytes == 0 }}
+      if: ${{ github.event_name == 'pull_request' &&
+        steps.fc.outputs.comment-id != 0 &&
+        steps.diff.outputs.diff-bytes == 0 }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -202,7 +122,9 @@ runs:
         edit-mode: replace
 
     - name: Create or update comment with Diff
-      if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes > 0 && steps.diff.outputs.diff-bytes < 65000 }}
+      if: ${{ github.event_name == 'pull_request' &&
+        steps.diff.outputs.diff-bytes > 0 &&
+        steps.diff.outputs.diff-bytes < 65000 }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -218,7 +140,8 @@ runs:
         edit-mode: replace
 
     - name: Create or update comment with Too Big Diff
-      if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes >= 65000 }}
+      if: ${{ github.event_name == 'pull_request' &&
+        steps.diff.outputs.diff-bytes >= 65000 }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -226,13 +149,16 @@ runs:
         body: |
           Diff output against ${{env.DIFF_BRANCH}}
 
-          To large to display in a comment. Please [check the logs](${{env.RUN_URL}}).
+          To large to display in a comment.
+
+          Please [check the logs](${{env.RUN_URL}}).
         edit-mode: replace
 
     - name: Deploy to ${{ inputs.environment }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      if: ${{ inputs.dry-run == 'false' && steps.detect-push-environment.outputs.match != '' }}
+      if: ${{ inputs.dry-run == 'false' &&
+        steps.detect-push-environment.outputs.match != '' }}
       run: |
         DEPLOY_BRANCH="${DEPLOY_BRANCH}"
         if ! git diff --quiet origin/${DEPLOY_BRANCH} ; then
@@ -245,7 +171,8 @@ runs:
     - name: Open Deployment PR to ${{ inputs.environment }}
       id: open-pr
       uses: peter-evans/create-pull-request@v4
-      if: ${{ inputs.dry-run == 'false' && steps.detect-pr-environment.outputs.match != '' }}
+      if: ${{ inputs.dry-run == 'false' &&
+        steps.detect-pr-environment.outputs.match != '' }}
       with:
         title: Deployment to ${{ inputs.environment }}
         commit-message: ${{ github.event.head_commit.message }}
@@ -254,16 +181,22 @@ runs:
         path: ${{ inputs.working-directory }}
 
     - name: PR Opened or Updated
-      if: ${{ steps.open-pr.outputs.pull-request-number && (steps.open-pr.outputs.pull-request-operation == 'created' || steps.open-pr.outputs.pull-request-operation == 'updated') }}
+      if: ${{ steps.open-pr.outputs.pull-request-number &&
+        (steps.open-pr.outputs.pull-request-operation == 'created' ||
+          steps.open-pr.outputs.pull-request-operation == 'updated') }}
       shell: bash
       run: |
-        echo "The deployment PR for ${{ inputs.environment }} is waiting for deployment after PR review and merge."
-        echo "Please review the k8s manifests in this PR and merge if ready to deploy to ${{ inputs.environment }}."
+        echo "The deployment PR for ${{ inputs.environment }} is waiting for
+          deployment after PR review and merge."
+        echo "Please review the k8s manifests in this PR and merge if ready
+          to deploy to ${{ inputs.environment }}."
         echo "${{ steps.cpr.outputs.pull-request-url }}"
 
     - name: PR Closed
-      if: ${{ steps.open-pr.outputs.pull-request-number && steps.open-pr.outputs.pull-request-operation == 'closed' }}
+      if: ${{ steps.open-pr.outputs.pull-request-number &&
+        steps.open-pr.outputs.pull-request-operation == 'closed' }}
       shell: bash
       run: |
-        echo "The deployment PR for ${{ inputs.environment }} has been closed as there are no changes detected."
+        echo "The deployment PR for ${{ inputs.environment }} has been closed as
+          there are no changes detected."
         echo "${{ steps.cpr.outputs.pull-request-url }}"
