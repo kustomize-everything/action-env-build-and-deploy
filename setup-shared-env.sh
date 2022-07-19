@@ -27,6 +27,9 @@ if [[ -n "${PUSH_ENVIRONMENT_REGEX}" ]]; then
 elif [[ -n "${PR_ENVIRONMENT_REGEX}" ]]; then
   DEPLOY_METHOD="push"
   PUSH_BRANCH="env/${ENV}"
+else
+  echo "Environment ${ENV} did not match any of the provided push or PR regexes."
+  exit 1
 fi
 
 echo "DEPLOY_METHOD=${DEPLOY_METHOD}" >> "${GITHUB_ENV}"
