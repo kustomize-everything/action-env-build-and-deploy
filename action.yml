@@ -167,7 +167,7 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       if: ${{ inputs.dry-run == 'false' }}
       run: |
-        if ! git diff --quiet origin/${PUSH_BRANCH} ; then
+        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
           git push --set-upstream -f origin ${PUSH_BRANCH}
           echo "Changes pushed to ${PUSH_BRANCH} branch."
         else
