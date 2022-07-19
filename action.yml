@@ -168,7 +168,7 @@ runs:
       if: ${{ inputs.dry-run == 'false' }}
       run: |
         if ! git diff --quiet origin/${DIFF_BRANCH} ; then
-          git push --set-upstream -f origin ${PUSH_BRANCH}
+          git push -f origin ${PUSH_BRANCH}
           echo "Changes pushed to ${PUSH_BRANCH} branch."
         else
           echo "There are no changes to push to ${PUSH_BRANCH} branch."
@@ -184,7 +184,7 @@ runs:
         commit-message: ${{ github.event.head_commit.message }}
         base: ${{ env.DEPLOY_BRANCH }}
         branch: ${{ env.PUSH_BRANCH }}
-        delete-branch: true
+        delete-branch: false
         path: ${{ inputs.working-directory }}
 
     - name: PR Opened or Updated
