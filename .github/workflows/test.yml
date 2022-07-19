@@ -57,6 +57,15 @@ jobs:
           cd test-deploy-reset
           git push --delete origin env/dev
 
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          ref: ${{ steps.reset.output.branch }}
+          path: test-deploy
+          ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
+
       - name: Action Test with dry-run false (pushes branch)
         uses: ./
         with:
