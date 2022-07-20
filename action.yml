@@ -191,7 +191,9 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       if: ${{ inputs.dry-run == 'false' }}
       run: |
-        git push origin -f "${PUSH_BRANCH}"
+        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
+          git push origin -f "${PUSH_BRANCH}"
+        fi
 
     - name: Open Deployment PR to ${{ inputs.environment }}
       id: open-pr
