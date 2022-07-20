@@ -1,17 +1,6 @@
 #!/bin/bash
 
 if ! git diff --quiet "origin/${DIFF_BRANCH}" --; then
-  if [ -n "${GIT_COMMIT_MESSAGE}" ]; then
-    git commit -m "${GIT_COMMIT_MESSAGE}
-
-    skip-checks: true
-    "
-  else
-    git commit -m "${GIT_HEAD_COMMIT_MESSAGE}
-
-    skip-checks: true
-    "
-  fi
   git diff "origin/${DIFF_BRANCH}" -- > git-diff
   echo "git diff origin/${DIFF_BRANCH}:"
   cat git-diff
