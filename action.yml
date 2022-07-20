@@ -162,30 +162,36 @@ runs:
           Please [check the logs](${{env.RUN_URL}}).
         edit-mode: replace
 
-    - name: Commit and Push to ${{ env.PUSH_BRANCH }}
+    - name: Commit to ${{ env.PUSH_BRANCH }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'push' }}
+      if: ${{ inputs.dry-run == 'false' &&
+        env.DEPLOY_METHOD == 'push' }}
       run: |
-        if [ -n "${GIT_COMMIT_MESSAGE}" ]; then
-          git commit -m "${GIT_COMMIT_MESSAGE}
-
-          skip-checks: true
-          "
-        else
-          git commit -m "${GIT_HEAD_COMMIT_MESSAGE}
-
-          skip-checks: true
-          "
-        fi
-
         if ! git diff --quiet origin/${DIFF_BRANCH} ; then
-          git push origin ${PUSH_BRANCH}
-          echo "Changes pushed to ${PUSH_BRANCH} branch."
+          if [ -n "${GIT_COMMIT_MESSAGE}" ]; then
+            git commit -m "${GIT_COMMIT_MESSAGE}
+
+            skip-checks: true
+            "
+          else
+            git commit -m "${GIT_HEAD_COMMIT_MESSAGE}
+
+            skip-checks: true
+            "
+          fi
+          echo "Changes committed to ${PUSH_BRANCH} branch."
         else
-          echo "There are no changes to push to ${PUSH_BRANCH} branch when
+          echo "There are no changes to commit to ${PUSH_BRANCH} branch when
             compared with origin/${DIFF_BRANCH}."
         fi
+
+    - name: Push to ${{ env.PUSH_BRANCH }}
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      if: ${{ inputs.dry-run == 'false' }}
+      run: |
+        git push origin "${PUSH_BRANCH}"
 
     - name: Open Deployment PR to ${{ inputs.environment }}
       id: open-pr
