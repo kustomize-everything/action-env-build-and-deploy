@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Fail on non-zero exit
+set -e
+
 # Automatically add meta annotations at build-time
 pushd "${ENV_DIR}" || exit 1
 kustomize edit add annotation deployment-branch:"${DEPLOY_BRANCH}"
@@ -19,7 +22,9 @@ popd || exit 1
 # Must reset to clear build-time annotations
 git reset --hard
 
+set +e
 if ! git ls-remote --exit-code --heads origin "${DEPLOY_BRANCH}"; then
+  set -e
   git checkout --orphan "${DEPLOY_BRANCH}"
   git rm -rf --ignore-unmatch '*'
   # Ensure that branch will not be polluted with unrendered YAML
@@ -28,6 +33,7 @@ if ! git ls-remote --exit-code --heads origin "${DEPLOY_BRANCH}"; then
   git push origin "${DEPLOY_BRANCH}"
 fi
 
+set -e
 # Base changes off the branch being deployed to
 git checkout "${DEPLOY_BRANCH}" --
 

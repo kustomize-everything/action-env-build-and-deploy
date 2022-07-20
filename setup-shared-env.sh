@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Fail on non-zero exit
+set -e
+
 DEPLOY_REPO_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
 echo "DEPLOY_REPO_URL=${DEPLOY_REPO_URL}" >> "${GITHUB_ENV}"
 

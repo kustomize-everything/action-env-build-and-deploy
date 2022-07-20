@@ -1,6 +1,9 @@
 #!/bin/bash
 
 if ! git diff --quiet "origin/${DIFF_BRANCH}" --; then
+  # Fail on non-zero exit
+  set -e
+
   git diff "origin/${DIFF_BRANCH}" -- > git-diff
   echo "git diff origin/${DIFF_BRANCH}:"
   cat git-diff
