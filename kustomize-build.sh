@@ -1,12 +1,14 @@
 #!/bin/bash
 
+env
+
 # Fail on non-zero exit
 set -e
 
 # Automatically add meta annotations at build-time
 pushd "${ENV_DIR}" || exit 1
-kustomize edit add annotation deployment-branch:"${DEPLOY_BRANCH}"
-kustomize edit add annotation deployment-branch-url:"${DEPLOY_BRANCH_URL}"
+kustomize edit add annotation env-branch:"${ENV_BRANCH}"
+kustomize edit add annotation env-branch-url:"${ENV_BRANCH_URL}"
 kustomize edit add annotation deployment-repo:"${GITHUB_REPOSITORY}"
 kustomize edit add annotation deployment-repo-url:"${DEPLOY_REPO_URL}"
 kustomize edit add buildmetadata originAnnotations,managedByLabel
@@ -23,19 +25,19 @@ popd || exit 1
 git reset --hard
 
 set +e
-if ! git ls-remote --exit-code --heads origin "${DEPLOY_BRANCH}"; then
+if ! git ls-remote --exit-code --heads origin "${ENV_BRANCH}"; then
   set -e
-  git checkout --orphan "${DEPLOY_BRANCH}"
+  git checkout --orphan "${ENV_BRANCH}"
   git rm -rf --ignore-unmatch '*'
   # Ensure that branch will not be polluted with unrendered YAML
   rm -rf base/ env/
   git commit --allow-empty -m "Initial Commit"
-  git push origin "${DEPLOY_BRANCH}"
+  git push origin "${ENV_BRANCH}"
 fi
 
 set -e
 # Base changes off the branch being deployed to
-git checkout "${DEPLOY_BRANCH}" --
+git checkout "${ENV_BRANCH}" --
 
 git checkout -B "${PUSH_BRANCH}" --
 

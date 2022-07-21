@@ -13,7 +13,7 @@ inputs:
   pr-environment-regex:
     description: |
       Regex to match environments which will push to a
-      deploy-pr/env/<environment> branch and open a PR for review
+      deploy-pr/<environment> branch and open a PR for review
     required: false
     default: .*(staging|production).*
   dry-run:
@@ -113,7 +113,7 @@ runs:
       with:
         issue-number: ${{ github.event.pull_request.number }}
         comment-author: 'github-actions[bot]'
-        body-includes: Diff output against ${{env.DIFF_BRANCH}}
+        body-includes: Comparison of ${{env.DIFF_BRANCH}}
 
     - name: Create or update comment with No Changes
       if: ${{ github.event_name == 'pull_request' &&
@@ -124,7 +124,7 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
-          Diff output against ${{env.DIFF_BRANCH}}
+          Comparison of ${{env.DIFF_BRANCH}} [${{env.DIFF_BRANCH_HEAD_SHORT_SHA}}](${{env.DIFF_BRANCH_HEAD_SHA_URL}}) to proposed changes to ${{env.ENV_DIR}} in this PR
 
           No changes detected.
         edit-mode: replace
@@ -138,8 +138,10 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
+          Comparison of ${{env.DIFF_BRANCH}} [${{env.DIFF_BRANCH_HEAD_SHORT_SHA}}](${{env.DIFF_BRANCH_HEAD_SHA_URL}}) to proposed changes to ${{env.ENV_DIR}} in this PR
+
           <details>
-            <summary>Diff output against ${{env.DIFF_BRANCH}}</summary>
+            <summary>Diff output</summary>
 
           ```diff
           ${{ steps.diff.outputs.diff }}
@@ -155,9 +157,9 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
-          Diff output against ${{env.DIFF_BRANCH}}
+          Comparison of ${{env.DIFF_BRANCH}} [${{env.DIFF_BRANCH_HEAD_SHORT_SHA}}](${{env.DIFF_BRANCH_HEAD_SHA_URL}}) to proposed changes to ${{env.ENV_DIR}} in this PR
 
-          To large to display in a comment.
+          Git Diff is too large to display in a comment.
 
           Please [check the logs](${{env.RUN_URL}}).
         edit-mode: replace
@@ -203,7 +205,7 @@ runs:
       with:
         title: Deployment to ${{ inputs.environment }}
         commit-message: ${{ github.event.head_commit.message }}
-        base: ${{ env.DEPLOY_BRANCH }}
+        base: ${{ env.ENV_BRANCH }}
         branch: ${{ env.PUSH_BRANCH }}
         delete-branch: true
         path: ${{ inputs.working-directory }}
