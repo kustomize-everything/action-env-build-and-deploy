@@ -1,7 +1,5 @@
 #!/bin/bash
 
-env
-
 # Fail on non-zero exit
 set -e
 
