@@ -13,7 +13,7 @@ inputs:
   pr-environment-regex:
     description: |
       Regex to match environments which will push to a
-      deploy-pr/env/<environment> branch and open a PR for review
+      deploy-pr/<environment> branch and open a PR for review
     required: false
     default: .*(staging|production).*
   dry-run:

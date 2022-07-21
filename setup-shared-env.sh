@@ -12,11 +12,14 @@ echo "DEPLOY_BRANCH=${DEPLOY_BRANCH}" >> "${GITHUB_ENV}"
 ENV_DIR="env/${ENV}"
 echo "ENV_DIR=${ENV_DIR}" >> "${GITHUB_ENV}"
 
+ENV_BRANCH="$(echo "${ENV_DIR}" | tr "/" "-")"
+echo "ENV_BRANCH=${ENV_BRANCH}" >> "${GITHUB_ENV}"
+
 set +e
-if git branch -r --contains "origin/deploy-pr/env/${ENV}"; then
-  DIFF_BRANCH="deploy-pr/env/${ENV}"
+if git branch -r --contains "origin/deploy-pr/${ENV_BRANCH}"; then
+  DIFF_BRANCH="deploy-pr/${ENV_BRANCH}"
 else
-  DIFF_BRANCH="env/${ENV}"
+  DIFF_BRANCH="${ENV_BRANCH}"
 fi
 set -e
 echo "DIFF_BRANCH=${DIFF_BRANCH}" >> "${GITHUB_ENV}"
@@ -26,10 +29,10 @@ echo "DEPLOY_BRANCH_URL=${DEPLOY_BRANCH_URL}" >> "${GITHUB_ENV}"
 
 if [[ -n "${PUSH_ENVIRONMENT_REGEX}" ]]; then
   DEPLOY_METHOD="push"
-  PUSH_BRANCH="env/${ENV}"
+  PUSH_BRANCH="${ENV_BRANCH}"
 elif [[ -n "${PR_ENVIRONMENT_REGEX}" ]]; then
   DEPLOY_METHOD="pull-request"
-  PUSH_BRANCH="deploy-pr/env/${ENV}"
+  PUSH_BRANCH="deploy-pr/${ENV_BRANCH}"
 else
   echo "Environment ${ENV} did not match any of the provided push or PR regexes."
   exit 1
