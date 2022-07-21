@@ -124,7 +124,7 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
-          Diff output against ${{env.DIFF_BRANCH}}
+          Diff output against ${{env.DIFF_BRANCH}} SHA ${{env.DIFF_BRANCH_HEAD_SHA}}
 
           No changes detected.
         edit-mode: replace
@@ -139,7 +139,7 @@ runs:
         issue-number: ${{ github.event.pull_request.number }}
         body: |
           <details>
-            <summary>Diff output against ${{env.DIFF_BRANCH}}</summary>
+            <summary>Diff output against ${{env.DIFF_BRANCH}} SHA ${{env.DIFF_BRANCH_HEAD_SHA}}</summary>
 
           ```diff
           ${{ steps.diff.outputs.diff }}
@@ -155,7 +155,7 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
-          Diff output against ${{env.DIFF_BRANCH}}
+          Diff output against ${{env.DIFF_BRANCH}} SHA ${{env.DIFF_BRANCH_HEAD_SHA}}
 
           To large to display in a comment.
 
