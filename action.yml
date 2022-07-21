@@ -203,7 +203,7 @@ runs:
       with:
         title: Deployment to ${{ inputs.environment }}
         commit-message: ${{ github.event.head_commit.message }}
-        base: ${{ env.DEPLOY_BRANCH }}
+        base: ${{ env.ENV_BRANCH }}
         branch: ${{ env.PUSH_BRANCH }}
         delete-branch: true
         path: ${{ inputs.working-directory }}
