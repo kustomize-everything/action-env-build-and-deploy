@@ -124,7 +124,7 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
-          Comparison of ${{env.DIFF_BRANCH}} ${{env.DIFF_BRANCH_HEAD_SHORT_SHA}} to proposed changes to ${{env.ENV_DIR}} in this PR
+          Comparison of ${{env.DIFF_BRANCH}} [${{env.DIFF_BRANCH_HEAD_SHORT_SHA}}](${{env.DIFF_BRANCH_HEAD_SHA_URL}}) to proposed changes to ${{env.ENV_DIR}} in this PR
 
           No changes detected.
         edit-mode: replace
@@ -138,7 +138,7 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
-          Comparison of ${{env.DIFF_BRANCH}} ${{env.DIFF_BRANCH_HEAD_SHORT_SHA}} to proposed changes to ${{env.ENV_DIR}} in this PR
+          Comparison of ${{env.DIFF_BRANCH}} [${{env.DIFF_BRANCH_HEAD_SHORT_SHA}}](${{env.DIFF_BRANCH_HEAD_SHA_URL}}) to proposed changes to ${{env.ENV_DIR}} in this PR
 
           <details>
             <summary>Diff output</summary>
@@ -157,7 +157,7 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
-          Comparison of ${{env.DIFF_BRANCH}} ${{env.DIFF_BRANCH_HEAD_SHORT_SHA}} to proposed changes to ${{env.ENV_DIR}} in this PR
+          Comparison of ${{env.DIFF_BRANCH}} [${{env.DIFF_BRANCH_HEAD_SHORT_SHA}}](${{env.DIFF_BRANCH_HEAD_SHA_URL}}) to proposed changes to ${{env.ENV_DIR}} in this PR
 
           Git Diff is too large to display in a comment.
 
