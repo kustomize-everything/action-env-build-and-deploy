@@ -25,13 +25,13 @@ jobs:
           path: test-deploy-reset
           ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
 
-      - name: Delete env/dev branch if it exists
+      - name: Delete env-dev branch if it exists
         shell: bash
         run: |
           cd test-deploy-reset
           set +e
-          if git ls-remote --exit-code --heads origin env/dev; then
-            git push --delete origin env/dev
+          if git ls-remote --exit-code --heads origin env-dev; then
+            git push --delete origin env-dev
           fi
           set -e
 
@@ -67,7 +67,7 @@ jobs:
         shell: bash
         run: |-
           cd test-deploy-reset
-          git push --delete origin env/dev
+          git push --delete origin env-dev
 
       - name: Checkout Testing Repo
         uses: actions/checkout@v2
