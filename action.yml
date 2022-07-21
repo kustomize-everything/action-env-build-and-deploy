@@ -113,7 +113,7 @@ runs:
       with:
         issue-number: ${{ github.event.pull_request.number }}
         comment-author: 'github-actions[bot]'
-        body-includes: Diff output against ${{env.DIFF_BRANCH}}
+        body-includes: Comparison of ${{env.DIFF_BRANCH}}
 
     - name: Create or update comment with No Changes
       if: ${{ github.event_name == 'pull_request' &&
@@ -124,7 +124,7 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
-          Diff output against ${{env.DIFF_BRANCH}} SHA ${{env.DIFF_BRANCH_HEAD_SHA}}
+          Comparison of ${{env.DIFF_BRANCH}} ${{env.DIFF_BRANCH_HEAD_SHORT_SHA}} to proposed changes to ${{env.ENV_DIR}} in this PR
 
           No changes detected.
         edit-mode: replace
@@ -138,8 +138,10 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
+          Comparison of ${{env.DIFF_BRANCH}} ${{env.DIFF_BRANCH_HEAD_SHORT_SHA}} to proposed changes to ${{env.ENV_DIR}} in this PR
+
           <details>
-            <summary>Diff output against ${{env.DIFF_BRANCH}} SHA ${{env.DIFF_BRANCH_HEAD_SHA}}</summary>
+            <summary>Diff output</summary>
 
           ```diff
           ${{ steps.diff.outputs.diff }}
@@ -155,9 +157,9 @@ runs:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
         body: |
-          Diff output against ${{env.DIFF_BRANCH}} SHA ${{env.DIFF_BRANCH_HEAD_SHA}}
+          Comparison of ${{env.DIFF_BRANCH}} ${{env.DIFF_BRANCH_HEAD_SHORT_SHA}} to proposed changes to ${{env.ENV_DIR}} in this PR
 
-          To large to display in a comment.
+          Git Diff is too large to display in a comment.
 
           Please [check the logs](${{env.RUN_URL}}).
         edit-mode: replace
