@@ -201,7 +201,8 @@ runs:
       id: open-pr
       uses: peter-evans/create-pull-request@v4
       if: ${{ inputs.dry-run == 'false' &&
-        env.DEPLOY_METHOD == 'pull-request' }}
+        env.DEPLOY_METHOD == 'pull-request' &&
+        steps.diff.outputs.diff-bytes > 0 }}
       with:
         title: Deployment to ${{ inputs.environment }}
         commit-message: ${{ github.event.head_commit.message }}
