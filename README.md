@@ -50,7 +50,7 @@ jobs:
           fetch-depth: 0
 
       - name: Render manifests and comment with diff
-        uses: kustomize-everything/action-env-build-and-deploy@v1
+        uses: kustomize-everything/action-env-build-and-deploy@v1.2.1
         if: github.event_name == 'pull_request'
         with:
           dry-run: 'true'
@@ -59,7 +59,7 @@ jobs:
           pr-environment-regex: prod
 
       - name: Render manifests and push branch
-        uses: kustomize-everything/action-env-build-and-deploy@v1
+        uses: kustomize-everything/action-env-build-and-deploy@v1.2.1
         if: github.event_name == 'push'
         with:
           dry-run: 'false'
