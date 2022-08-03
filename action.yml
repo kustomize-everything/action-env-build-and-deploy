@@ -78,6 +78,11 @@ runs:
       with:
         version: ${{ inputs.version }}
         sha256-checksum: ${{ inputs.sha256-checksum }}
+        
+    - uses: azure/setup-helm@v3
+      with:
+         version: '3.8.0' # default is latest (stable)
+      id: install
 
     - name: Set Git Author
       shell: bash
