@@ -28,11 +28,11 @@ inputs:
   version:
     description: Version of Kustomize to use
     required: false
-    default: 4.5.5
+    default: 4.5.7
   sha256-checksum:
     description: Checksum of Kustomize version
     required: false
-    default: bba81aa61dba057db1d5abeddf1e522b568b2d906ab67a5c80935e97302c8773
+    default: 701e3c4bfa14e4c520d481fdf7131f902531bfc002cb5062dcf31263a09c70c9
   git-commit-user:
     description: Name to add to the Git Commit Message
     required: false
@@ -44,6 +44,9 @@ inputs:
   git-commit-message:
     description: Commit message to use for deployment
     required: false
+  helm-version:
+    description: Helm Version to install
+    default: 3.9.4
 runs:
   using: composite
   steps:
@@ -81,7 +84,7 @@ runs:
         
     - uses: azure/setup-helm@v3
       with:
-         version: '3.8.0' # default is latest (stable)
+         version: ${{ inputs.helm-version }} # default is latest (stable)
       id: install
 
     - name: Set Git Author
