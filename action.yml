@@ -86,6 +86,9 @@ runs:
       with:
          version: ${{ inputs.helm-version }} # default is latest (stable)
       id: install
+      
+    - name: Set foobar to cool
+      uses: mikefarah/yq@v4.27.5
 
     - name: Set Git Author
       shell: bash
