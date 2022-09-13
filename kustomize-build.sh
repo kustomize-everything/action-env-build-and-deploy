@@ -16,6 +16,7 @@ kustomize build --enable-helm "${ENV_DIR}" > /tmp/all.yaml
 echo "/tmp/all contents:"
 cat /tmp/all.yaml
 pushd /tmp || exit 1
+yq --version
 yq -s '.kind + "-" + (.apiVersion | sub("\/", "_")) + "-" + .metadata.name' < all.yaml
 echo "ls in /tmp after split:"
 ls -a
