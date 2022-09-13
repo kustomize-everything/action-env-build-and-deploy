@@ -13,9 +13,12 @@ kustomize edit add buildmetadata originAnnotations,managedByLabel
 popd || exit 1
 
 kustomize build --enable-helm "${ENV_DIR}" > /tmp/all.yaml
-
+echo "/tmp/all contents:"
+cat /tmp/all.yaml
 pushd /tmp || exit 1
 yq -s '.kind + "-" + (.apiVersion | sub("\/", "_")) + "-" + .metadata.name' < all.yaml
+echo "ls in /tmp after split:"
+ls -a
 rm all.yaml
 popd || exit 1
 
