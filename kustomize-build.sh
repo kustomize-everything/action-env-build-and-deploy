@@ -17,7 +17,7 @@ echo "/tmp/all contents:"
 cat /tmp/all.yaml
 pushd /tmp || exit 1
 yq --version
-yq -s '.kind + "-" + .metadata.name' < all.yaml
+yq -s '.kind + "-" + .metadata.name + ".yaml"' < all.yaml
 echo "ls in /tmp after split:"
 ls -a
 rm all.yaml
