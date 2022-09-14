@@ -87,7 +87,7 @@ runs:
          version: ${{ inputs.helm-version }} # default is latest (stable)
       id: install
       
-    - name: Set foobar to cool
+    - name: Install yq
       uses: mikefarah/yq@v4.27.5
 
     - name: Set Git Author
