@@ -81,12 +81,12 @@ runs:
       with:
         version: ${{ inputs.version }}
         sha256-checksum: ${{ inputs.sha256-checksum }}
-        
+
     - uses: azure/setup-helm@v3
       with:
-         version: ${{ inputs.helm-version }} # default is latest (stable)
+        version: ${{ inputs.helm-version }}   # default is latest (stable)
       id: install
-      
+
     - name: Install yq
       uses: mikefarah/yq@v4.27.5
 
@@ -123,13 +123,12 @@ runs:
       id: fc
       with:
         issue-number: ${{ github.event.pull_request.number }}
-        comment-author: 'github-actions[bot]'
+        comment-author: github-actions[bot]
         body-includes: Comparison of ${{env.DIFF_BRANCH}}
 
     - name: Create or update comment with No Changes
-      if: ${{ github.event_name == 'pull_request' &&
-        steps.fc.outputs.comment-id != 0 &&
-        steps.diff.outputs.diff-bytes == 0 }}
+      if: ${{ github.event_name == 'pull_request' && steps.fc.outputs.comment-id !=
+        0 && steps.diff.outputs.diff-bytes == 0 }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -141,9 +140,8 @@ runs:
         edit-mode: replace
 
     - name: Create or update comment with Diff
-      if: ${{ github.event_name == 'pull_request' &&
-        steps.diff.outputs.diff-bytes > 0 &&
-        steps.diff.outputs.diff-bytes < 65000 }}
+      if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes
+        > 0 && steps.diff.outputs.diff-bytes < 65000 }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -161,8 +159,8 @@ runs:
         edit-mode: replace
 
     - name: Create or update comment with Too Big Diff
-      if: ${{ github.event_name == 'pull_request' &&
-        steps.diff.outputs.diff-bytes >= 65000 }}
+      if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes
+        >= 65000 }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -178,8 +176,7 @@ runs:
     - name: Commit to ${{ env.PUSH_BRANCH }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      if: ${{ inputs.dry-run == 'false' &&
-        env.DEPLOY_METHOD == 'push' }}
+      if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'push' }}
       run: |
         if ! git diff --quiet origin/${DIFF_BRANCH} ; then
           if [ -n "${GIT_COMMIT_MESSAGE}" ]; then
@@ -211,8 +208,7 @@ runs:
     - name: Open Deployment PR to ${{ inputs.environment }}
       id: open-pr
       uses: peter-evans/create-pull-request@v4
-      if: ${{ inputs.dry-run == 'false' &&
-        env.DEPLOY_METHOD == 'pull-request' &&
+      if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'pull-request' &&
         steps.diff.outputs.diff-bytes > 0 }}
       with:
         title: Deployment to ${{ inputs.environment }}
@@ -223,9 +219,9 @@ runs:
         path: ${{ inputs.working-directory }}
 
     - name: PR Opened or Updated
-      if: ${{ steps.open-pr.outputs.pull-request-number &&
-        (steps.open-pr.outputs.pull-request-operation == 'created' ||
-          steps.open-pr.outputs.pull-request-operation == 'updated') }}
+      if: ${{ steps.open-pr.outputs.pull-request-number && (steps.open-pr.outputs.pull-request-operation
+        == 'created' || steps.open-pr.outputs.pull-request-operation == 'updated')
+        }}
       shell: bash
       run: |
         echo "The deployment PR for ${{ inputs.environment }} is waiting for
@@ -235,10 +231,10 @@ runs:
         echo "${{ steps.cpr.outputs.pull-request-url }}"
 
     - name: PR Closed
-      if: ${{ steps.open-pr.outputs.pull-request-number &&
-        steps.open-pr.outputs.pull-request-operation == 'closed' }}
+      if: ${{ steps.open-pr.outputs.pull-request-number && steps.open-pr.outputs.pull-request-operation
+        == 'closed' }}
       shell: bash
-      run: |
+      run: |-
         echo "The deployment PR for ${{ inputs.environment }} has been closed as
           there are no changes detected."
         echo "${{ steps.cpr.outputs.pull-request-url }}"
