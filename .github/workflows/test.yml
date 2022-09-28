@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Checkout Testing Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
@@ -48,7 +48,7 @@ jobs:
           git push origin ${BRANCH} -f
 
       - name: Checkout Testing Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
@@ -70,7 +70,7 @@ jobs:
           git push --delete origin env-dev
 
       - name: Checkout Testing Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
