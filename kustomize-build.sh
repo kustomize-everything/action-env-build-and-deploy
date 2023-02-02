@@ -16,7 +16,7 @@ kustomize build --enable-helm "${ENV_DIR}" > /tmp/all.yaml
 
 pushd /tmp || exit 1
 # Invalid GitHub artifact path name characters: Double quote ", Colon :, Less than <, Greater than >, Vertical bar |, Asterisk *, Question mark ?
-yq -s '.kind + "-" + (.apiVersion | sub("[\/\":<>|\*\?]", "_")) + "-" + .metadata.name + ".yaml"' < all.yaml
+yq -s '.kind + "-" + (.apiVersion | sub("/", "_")) + "-" + (.metadata.name | sub("[:<>|*?/\\]", "_")) + ".yaml"' < all.yaml
 rm all.yaml
 popd || exit 1
 
