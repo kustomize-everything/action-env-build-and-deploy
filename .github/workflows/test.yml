@@ -23,7 +23,9 @@ jobs:
           repository: kustomize-everything/test-deploy
           ref: main
           path: test-deploy-reset
-          ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
+          # Remember that this token expires so you will need to login to
+          # pusher-robot and generate a new token periodically.
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Delete env-dev branch if it exists
         shell: bash
@@ -75,7 +77,7 @@ jobs:
           repository: kustomize-everything/test-deploy
           ref: ${{ steps.reset.output.branch }}
           path: test-deploy
-          ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Action Test with dry-run false (pushes branch)
         uses: ./
@@ -84,3 +86,5 @@ jobs:
           environment: dev
           push-environment-regex: dev
           working-directory: test-deploy
+
+# The terrible secret of space.
