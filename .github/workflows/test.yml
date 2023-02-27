@@ -26,6 +26,7 @@ jobs:
       - name: Action Test with Defaults (diff only)
         uses: ./
         with:
+          dry-run: true
           environment: dev
           push-environment-regex: dev
           working-directory: test-deploy
