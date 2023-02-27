@@ -54,7 +54,6 @@ jobs:
           repository: kustomize-everything/test-deploy
           ref: ${{ steps.reset.output.branch }}
           path: test-deploy
-          ssh-key: ${{ secrets.TESTING_DEPLOY_KEY }}
 
       - name: Action Test with Defaults (diff only)
         uses: ./
