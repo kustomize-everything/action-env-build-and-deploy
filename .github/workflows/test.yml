@@ -96,4 +96,27 @@ jobs:
           working-directory: test-deploy
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
+      - name: Reset testing repo to known state
+        shell: bash
+        run: |-
+          cd test-deploy-reset
+          git push --delete origin env-dev
+
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          ref: ${{ steps.reset.output.branch }}
+          path: test-deploy
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
+
+      - name: Action Test with dry-run false (opens PR)
+        uses: ./
+        with:
+          dry-run: "false"
+          environment: dev
+          pr-environment-regex: dev
+          working-directory: test-deploy
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 # The terrible secret of space.
