@@ -44,6 +44,12 @@ inputs:
   git-commit-message:
     description: Commit message to use for deployment
     required: false
+  token:
+    description: |
+      The token to use for pushing to the repo. This should be a bot account
+      with write access to the target repo, as well as PR access if it needs to
+      open a PR.
+    required: true
   helm-version:
     description: Helm Version to install
     default: 3.9.4
@@ -125,6 +131,7 @@ runs:
         issue-number: ${{ github.event.pull_request.number }}
         comment-author: github-actions[bot]
         body-includes: Comparison of ${{env.DIFF_BRANCH}}
+        token: ${{ inputs.token }}
 
     - name: Create or update comment with No Changes
       if: ${{ github.event_name == 'pull_request' && steps.fc.outputs.comment-id !=
@@ -138,10 +145,10 @@ runs:
 
           No changes detected.
         edit-mode: replace
+        token: ${{ inputs.token }}
 
     - name: Create or update comment with Diff
-      if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes
-        > 0 && steps.diff.outputs.diff-bytes < 65000 }}
+      if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes > 0 && steps.diff.outputs.diff-bytes < 65000 }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -157,10 +164,10 @@ runs:
           ```
           </details>
         edit-mode: replace
+        token: ${{ inputs.token }}
 
     - name: Create or update comment with Too Big Diff
-      if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes
-        >= 65000 }}
+      if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes >= 65000 }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -172,6 +179,7 @@ runs:
 
           Please [check the logs](${{env.RUN_URL}}).
         edit-mode: replace
+        token: ${{ inputs.token }}
 
     - name: Commit to ${{ env.PUSH_BRANCH }}
       shell: bash
@@ -220,6 +228,7 @@ runs:
         branch: ${{ env.PUSH_BRANCH }}
         delete-branch: true
         path: ${{ inputs.working-directory }}
+        token: ${{ inputs.token }}
 
     - name: PR Opened or Updated
       if: ${{ steps.open-pr.outputs.pull-request-number && (steps.open-pr.outputs.pull-request-operation
