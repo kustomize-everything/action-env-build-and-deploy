@@ -8,14 +8,15 @@ on:
     branches:
       - main
 
-env:
-  GITHUB_TOKEN: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
-
 jobs:
   test-setup:
     name: Test Setup
     runs-on: ubuntu-latest
     steps:
+      - uses: de-vri-es/setup-git-credentials@v2
+        with:
+          credentials: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
+
       - name: Checkout Repo
         uses: actions/checkout@v3
 
