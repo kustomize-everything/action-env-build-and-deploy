@@ -13,6 +13,11 @@ jobs:
     name: Test Setup
     runs-on: ubuntu-latest
     steps:
+      - name: Configure Git
+        shell: bash
+        run: |
+          git config --global user.name "Pusher Robot"
+          git config --global user.email "126524721+pusher-robot@users.noreply.github.com"
       - name: Checkout Repo
         uses: actions/checkout@v3
 
