@@ -85,6 +85,7 @@ jobs:
           repository: kustomize-everything/test-deploy
           ref: ${{ steps.reset.output.branch }}
           path: test-deploy
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Action Test with dry-run false (pushes branch)
         uses: ./
