@@ -27,6 +27,7 @@ jobs:
           repository: kustomize-everything/test-deploy
           ref: main
           path: test-deploy-reset
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Delete env-dev branch if it exists
         shell: bash
