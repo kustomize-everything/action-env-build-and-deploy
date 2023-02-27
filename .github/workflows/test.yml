@@ -56,6 +56,7 @@ jobs:
           repository: kustomize-everything/test-deploy
           ref: ${{ steps.reset.output.branch }}
           path: test-deploy
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Action Test with Defaults (diff only)
         uses: ./
@@ -64,6 +65,7 @@ jobs:
           environment: dev
           push-environment-regex: dev
           working-directory: test-deploy
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Reset testing repo to known state
         shell: bash
@@ -87,5 +89,6 @@ jobs:
           environment: dev
           push-environment-regex: dev
           working-directory: test-deploy
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
 # The terrible secret of space.
