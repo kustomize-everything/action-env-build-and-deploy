@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+env:
+  GITHUB_TOKEN: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
+
 jobs:
   test-setup:
     name: Test Setup
@@ -23,9 +26,6 @@ jobs:
           repository: kustomize-everything/test-deploy
           ref: main
           path: test-deploy-reset
-          # Remember that this token expires so you will need to login to
-          # pusher-robot and generate a new token periodically.
-          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Delete env-dev branch if it exists
         shell: bash
@@ -56,7 +56,6 @@ jobs:
           repository: kustomize-everything/test-deploy
           ref: ${{ steps.reset.output.branch }}
           path: test-deploy
-          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Action Test with Defaults (diff only)
         uses: ./
@@ -80,7 +79,6 @@ jobs:
           repository: kustomize-everything/test-deploy
           ref: ${{ steps.reset.output.branch }}
           path: test-deploy
-          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Action Test with dry-run false (pushes branch)
         uses: ./
