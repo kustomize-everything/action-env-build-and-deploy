@@ -39,6 +39,9 @@ jobs:
           if git ls-remote --exit-code --heads origin env-dev; then
             git push --delete origin env-dev
           fi
+          if git ls-remote --exit-code --heads origin deploy-pr/env-dev; then
+            git push --delete origin env-dev
+          fi
           set -e
 
       - name: Reset testing repo to known state
@@ -77,6 +80,7 @@ jobs:
         run: |-
           cd test-deploy-reset
           git push --delete origin env-dev
+          git push --delete origin deploy-pr/env-dev
 
       - name: Checkout Testing Repo
         uses: actions/checkout@v3
