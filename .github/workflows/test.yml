@@ -94,38 +94,6 @@ jobs:
           git-commit-user: Pusher Robot
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
-      - name: Delete branches if they exist
-        shell: bash
-        working-directory: test-deploy-reset
-        run: ../test/cleanup-branches.sh
-
-      - name: Checkout Testing Repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          repository: kustomize-everything/test-deploy
-          ref: ${{ steps.reset.output.branch }}
-          path: test-deploy
-          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
-
-      - name: Action Test with dry-run false (opens PR)
-        uses: ./
-        with:
-          dry-run: "false"
-          environment: dev
-          push-environment-regex: false
-          pr-environment-regex: dev
-          working-directory: test-deploy
-          git-commit-user: Pusher Robot
-          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
-
-      - name: Merge PR with GH CLI
-        working-directory: test-deploy
-        env:
-          GH_TOKEN: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
-        run: |-
-          gh pr merge --squash --delete-branch
-
       - name: Checkout Testing Repo
         uses: actions/checkout@v3
         with:
@@ -144,6 +112,31 @@ jobs:
           git push origin main
 
       - name: Action Test with dry-run false after a change (opens PR)
+        uses: ./
+        with:
+          dry-run: "false"
+          environment: dev
+          push-environment-regex: false
+          pr-environment-regex: dev
+          working-directory: test-deploy
+          git-commit-user: Pusher Robot
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}B
+
+      - name: Delete branches if they exist
+        shell: bash
+        working-directory: test-deploy-reset
+        run: ../test/cleanup-branches.sh
+
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          ref: ${{ steps.reset.output.branch }}
+          path: test-deploy
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
+
+      - name: Action Test with dry-run false (opens PR)
         uses: ./
         with:
           dry-run: "false"
