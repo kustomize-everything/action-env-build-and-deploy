@@ -29,20 +29,21 @@ popd || exit 1
 # Must reset to clear build-time annotations
 git reset --hard
 
+# Base changes off the branch being deployed to
 set +e
-if ! git ls-remote --exit-code --heads origin "${ENV_BRANCH}"; then
-  set -e
-  git checkout --orphan "${ENV_BRANCH}"
+# If the branch exists, check it out
+if git show-ref --verify --quiet "refs/heads/${ENV_BRANCH}"; then
+  git checkout "${ENV_BRANCH}" --
+else
+# If the branch does not exist, create it
+  git checkout --orphan "${ENV_BRANCH}" --
   git rm -rf --ignore-unmatch '*'
   # Ensure that branch will not be polluted with unrendered YAML
   rm -rf base/ env/
   git commit --allow-empty -m "Initial Commit"
   git push origin "${ENV_BRANCH}"
 fi
-
 set -e
-# Base changes off the branch being deployed to
-git checkout "${ENV_BRANCH}" --
 
 git checkout -B "${PUSH_BRANCH}" --
 
