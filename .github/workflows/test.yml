@@ -72,6 +72,7 @@ jobs:
           dry-run: true
           environment: dev
           push-environment-regex: dev
+          pr-environment-regex: false
           working-directory: test-deploy
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
@@ -97,6 +98,7 @@ jobs:
           dry-run: "false"
           environment: dev
           push-environment-regex: dev
+          pr-environment-regex: false
           working-directory: test-deploy
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
@@ -120,6 +122,7 @@ jobs:
         with:
           dry-run: "false"
           environment: dev
+          push-environment-regex: false
           pr-environment-regex: dev
           working-directory: test-deploy
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
