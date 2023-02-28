@@ -59,17 +59,19 @@ runs:
     - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
       shell: bash
 
-    - uses: actions-ecosystem/action-regex-match@v2
+    - name: Detect Push Environment
       id: detect-push-environment
       shell: bash
       run: |-
-        python regex-match.py "${{ inputs.push-environment-regex }}" "${{ inputs.environment }}"
+        MATCH=$(python regex-match.py "${{ inputs.push-environment-regex }}" "${{ inputs.environment }}")
+        echo "match=$MATCH" >> $GITHUB_OUTPUT
 
-    - uses: actions-ecosystem/action-regex-match@v2
+    - name: Detect PR Environment
       id: detect-pr-environment
       shell: bash
       run: |-
-        python regex-match.py "${{ inputs.pr-environment-regex }}" "${{ inputs.environment }}"
+        MATCH=$(python regex-match.py "${{ inputs.pr-environment-regex }}" "${{ inputs.environment }}")
+        echo "match=$MATCH" >> $GITHUB_OUTPUT
 
     # These variables are re-used by the run steps.
     - name: Shared ENV Setup
