@@ -25,6 +25,12 @@ jobs:
           ref: main
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
+      - name: Set Git Username and Email for test-deploy repo
+        working-directory: test-deploy
+        run: |-
+          git config user.name "Should not be pushed; if this pushes it's a bug"
+          git config user.email "nobody@github.com"
+
       - name: Update an image tag in a kustomization file
         working-directory: test-deploy
         run: |-
@@ -62,6 +68,8 @@ jobs:
           cd env/dev
           kustomize edit set image nginx=nginx:1.${{github.run_id}}.1
           git add kustomization.yaml
+          git config --global user.name "No push; if this pushes it's a bug"
+          git config --global user.email "nobody@github.com"
           git commit -m "Update image tag for push test"
 
       - name: Action Test with dry-run false (pushes branch)
@@ -92,6 +100,8 @@ jobs:
           cd env/dev
           kustomize edit set image nginx=nginx:1.${{github.run_id}}.2
           git add kustomization.yaml
+          git config --global user.name "No push; if this pushes it's a bug"
+          git config --global user.email "nobody@github.com"
           git commit -m "Update image tag for PR test"
 
       - name: Action Test with dry-run false (opens PR)
