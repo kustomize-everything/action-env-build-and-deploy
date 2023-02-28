@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Output all commands
-set -x
+# set -x
 
 # Show line numbers
-export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+# export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
 
 # Base changes off the branch being deployed to
 set +e
