@@ -14,6 +14,8 @@ if ! git diff --quiet "origin/${DIFF_BRANCH}" --; then
   git diff "origin/${DIFF_BRANCH}" -- > git-diff
   echo "git diff origin/${DIFF_BRANCH}:"
   cat git-diff
+  # Set random delimiter https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+  EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
   # shellcheck disable=SC2129
   echo "diff<<$EOF" >> "${GITHUB_OUTPUT}"
   # shellcheck disable=SC2129
