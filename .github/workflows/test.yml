@@ -52,6 +52,15 @@ jobs:
           git-commit-email: "126524721+pusher-robot@users.noreply.github.com"
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          path: test-deploy
+          ref: main
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
+
       - name: Update an image tag in a kustomization file
         working-directory: test-deploy
         run: |-
