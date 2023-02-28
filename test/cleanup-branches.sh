@@ -3,6 +3,6 @@
 REPO="$1"
 
 cd "${REPO}" || exit 1
-set +e
+set -e
 git push --delete origin env-dev
 git push --delete origin deploy-pr/env-dev
