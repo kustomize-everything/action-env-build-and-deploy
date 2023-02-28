@@ -61,15 +61,15 @@ runs:
 
     - uses: actions-ecosystem/action-regex-match@v2
       id: detect-push-environment
-      with:
-        text: ${{ inputs.environment }}
-        regex: ${{ inputs.push-environment-regex }}
+      shell: bash
+      run: |-
+        python regex-match.py "${{ inputs.push-environment-regex }}" "${{ inputs.environment }}"
 
     - uses: actions-ecosystem/action-regex-match@v2
       id: detect-pr-environment
-      with:
-        text: ${{ inputs.environment }}
-        regex: ${{ inputs.pr-environment-regex }}
+      shell: bash
+      run: |-
+        python regex-match.py "${{ inputs.pr-environment-regex }}" "${{ inputs.environment }}"
 
     # These variables are re-used by the run steps.
     - name: Shared ENV Setup
