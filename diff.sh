@@ -18,13 +18,13 @@ if ! git diff --quiet "origin/${DIFF_BRANCH}" --; then
   diff="${diff//'%'/'%25'}"
   diff="${diff//$'\n'/'%0A'}"
   diff="${diff//$'\r'/'%0D'}"
-  echo "::set-output name=diff::$diff"
+  echo "diff=${diff}" >> $GITHUB_OUTPUT
   echo "Diff:"
   echo "${diff}"
   bytes="$(wc -c < git-diff | tr -d ' \n')"
   echo
   echo "Bytes: ${bytes}"
-  echo "::set-output name=diff-bytes::$bytes"
+  echo "diff-bytes=${bytes}" >> $GITHUB_OUTPUT
   rm git-diff
 else
   echo "There are no changes to push to the ${PUSH_BRANCH} branch when
