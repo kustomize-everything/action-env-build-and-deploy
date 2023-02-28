@@ -108,7 +108,12 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: kustomize-build.sh
 
-    - name: Git diff against ${DIFF_BRANCH}
+    - name: Branch and stage
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: branch-and-stage.sh
+
+    - name: Git diff against ${{ env.DIFF_BRANCH }}
       shell: bash
       id: diff
       working-directory: ${{ inputs.working-directory }}
@@ -174,35 +179,18 @@ runs:
     - name: Commit to ${{ env.PUSH_BRANCH }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'push' }}
       env:
         GIT_COMMIT_MESSAGE: ${{ inputs.git-commit-message }}
         GIT_HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-      run: |
-        if [ -n "${GIT_COMMIT_MESSAGE}" ]; then
-          GIT_COMMIT_MESSAGE="${GIT_COMMIT_MESSAGE}"
-        else
-          GIT_COMMIT_MESSAGE="Deploy ${{ env.ENV }} to ${{ env.PUSH_BRANCH }} branch"
-        fi
-        echo "commit-message=${GIT_COMMIT_MESSAGE}" >> $GITHUB_OUTPUT
-
-        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
-          git commit -m "${GIT_COMMIT_MESSAGE}
-
-          skip-checks: true
-          "
-          echo "Changes committed to ${PUSH_BRANCH} branch."
-        else
-          echo "There are no changes to commit to ${PUSH_BRANCH} branch when
-            compared with origin/${DIFF_BRANCH}."
-        fi
+      if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'push' }}
+      run: commit.sh
 
     - name: Push to ${{ env.PUSH_BRANCH }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       if: ${{ inputs.dry-run == 'false' }}
       run: |
-        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
+        if ! git diff --quiet "origin/${DIFF_BRANCH}" ; then
           git push origin -f "${PUSH_BRANCH}"
         fi
 
