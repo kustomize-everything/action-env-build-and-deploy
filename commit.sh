@@ -1,7 +1,5 @@
 #!/bin/bash
 
-echo "GIT_HEAD_COMMIT_MESSAGE='${GIT_HEAD_COMMIT_MESSAGE}'"
-
 if [ -z "${GIT_COMMIT_MESSAGE}" ]; then
     GIT_COMMIT_MESSAGE="${GIT_HEAD_COMMIT_MESSAGE}"
 fi
