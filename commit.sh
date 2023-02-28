@@ -14,6 +14,7 @@ if ! git diff --quiet "origin/${DIFF_BRANCH}" ; then
 
     skip-checks: true
     "
+    git show
     echo "Changes committed to ${PUSH_BRANCH} branch."
 else
     echo "There are no changes to commit to ${PUSH_BRANCH} branch when
