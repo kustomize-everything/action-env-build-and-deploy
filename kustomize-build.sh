@@ -3,6 +3,12 @@
 # Fail on non-zero exit
 set -e
 
+# Output all commands
+set -x
+
+# Show line numbers
+export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+
 # Automatically add meta annotations at build-time
 pushd "${ENV_DIR}" || exit 1
 kustomize edit add annotation env-branch:"${ENV_BRANCH}"
