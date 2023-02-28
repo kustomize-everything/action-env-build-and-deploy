@@ -18,7 +18,12 @@ if ! git diff --quiet "origin/${DIFF_BRANCH}" --; then
   diff="${diff//'%'/'%25'}"
   diff="${diff//$'\n'/'%0A'}"
   diff="${diff//$'\r'/'%0D'}"
-  echo "diff=${diff}" >> "${GITHUB_OUTPUT}"
+  # shellcheck disable=SC2129
+  echo "diff<<$EOF" >> "${GITHUB_OUTPUT}"
+  # shellcheck disable=SC2129
+  echo "${diff}" >> "${GITHUB_OUTPUT}"
+  # shellcheck disable=SC2129
+  echo "$EOF" >> "${GITHUB_OUTPUT}"
   echo "Diff:"
   echo "${diff}"
   bytes="$(wc -c < git-diff | tr -d ' \n')"
