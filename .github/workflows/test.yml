@@ -111,7 +111,7 @@ jobs:
           git commit -m "Update image tag"
           git push origin main
 
-      - name: Action Test with dry-run false after a change (opens PR)
+      - name: Action Test with dry-run false after a change
         uses: ./
         with:
           dry-run: "false"
