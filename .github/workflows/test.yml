@@ -52,36 +52,6 @@ jobs:
           git-commit-email: "126524721+pusher-robot@users.noreply.github.com"
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
-      - name: Checkout Testing Repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          repository: kustomize-everything/test-deploy
-          path: test-deploy
-          ref: main
-          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
-
-      - name: Update an image tag in a kustomization file
-        working-directory: test-deploy
-        run: |-
-          git checkout -B pr-action-env-build-and-deploy-${{ github.event.number }}-${{ github.run_id }}-diff-2
-          cd env/dev
-          kustomize edit set image nginx=nginx:1.${{github.run_id}}2.0
-          git add kustomization.yaml
-          git commit -m "Update image tag for diff test part 2"
-
-      - name: Action Test with Custom Commit Message (diff only)
-        uses: ./
-        with:
-          dry-run: true
-          environment: dev
-          push-environment-regex: dev
-          pr-environment-regex: false
-          working-directory: test-deploy
-          git-commit-user: Pusher Robot
-          git-commit-email: "126524721+pusher-robot@users.noreply.github.com"
-          git-commit-message: "Custom commit message for diff test"
-          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Checkout Testing Repo
         uses: actions/checkout@v3
@@ -111,6 +81,37 @@ jobs:
           working-directory: test-deploy
           git-commit-user: Pusher Robot
           git-commit-email: "126524721+pusher-robot@users.noreply.github.com"
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
+
+      - name: Checkout Testing Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          repository: kustomize-everything/test-deploy
+          path: test-deploy
+          ref: main
+          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
+
+      - name: Update an image tag in a kustomization file
+        working-directory: test-deploy
+        run: |-
+          git checkout -B pr-action-env-build-and-deploy-${{ github.event.number }}-${{ github.run_id }}-push-custom
+          cd env/dev
+          kustomize edit set image nginx=nginx:1.${{github.run_id}}2.0
+          git add kustomization.yaml
+          git commit -m "Update image tag for push wish custom commit test"
+
+      - name: Action Test with Custom Commit Message (push)
+        uses: ./
+        with:
+          dry-run: false
+          environment: dev
+          push-environment-regex: dev
+          pr-environment-regex: false
+          working-directory: test-deploy
+          git-commit-user: Pusher Robot
+          git-commit-email: "126524721+pusher-robot@users.noreply.github.com"
+          git-commit-message: "Custom commit message for push with custom commit test"
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Checkout Testing Repo
