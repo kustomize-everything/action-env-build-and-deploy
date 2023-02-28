@@ -74,14 +74,21 @@ jobs:
           push-environment-regex: dev
           pr-environment-regex: false
           working-directory: test-deploy
+          git-commit-user: Pusher Robot
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
-      - name: Reset testing repo to known state
+      - name: Delete env-dev branch if it exists
         shell: bash
-        run: |-
+        run: |
           cd test-deploy-reset
-          git push --delete origin env-dev
-          git push --delete origin deploy-pr/env-dev
+          set +e
+          if git ls-remote --exit-code --heads origin env-dev; then
+            git push --delete origin env-dev
+          fi
+          if git ls-remote --exit-code --heads origin deploy-pr/env-dev; then
+            git push --delete origin env-dev
+          fi
+          set -e
 
       - name: Checkout Testing Repo
         uses: actions/checkout@v3
@@ -100,13 +107,21 @@ jobs:
           push-environment-regex: dev
           pr-environment-regex: false
           working-directory: test-deploy
+          git-commit-user: Pusher Robot
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
-      - name: Reset testing repo to known state
+      - name: Delete env-dev branch if it exists
         shell: bash
-        run: |-
+        run: |
           cd test-deploy-reset
-          git push --delete origin env-dev
+          set +e
+          if git ls-remote --exit-code --heads origin env-dev; then
+            git push --delete origin env-dev
+          fi
+          if git ls-remote --exit-code --heads origin deploy-pr/env-dev; then
+            git push --delete origin env-dev
+          fi
+          set -e
 
       - name: Checkout Testing Repo
         uses: actions/checkout@v3
@@ -125,5 +140,6 @@ jobs:
           push-environment-regex: false
           pr-environment-regex: dev
           working-directory: test-deploy
+          git-commit-user: Pusher Robot
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 # The terrible secret of space.
