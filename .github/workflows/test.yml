@@ -27,7 +27,7 @@ jobs:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
           path: test-deploy
-          persist-credentials: true
+          ref: main
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Update an image tag in a kustomization file
@@ -56,6 +56,7 @@ jobs:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
           path: test-deploy
+          ref: main
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Update an image tag in a kustomization file
@@ -83,7 +84,7 @@ jobs:
         with:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
-          ref: ${{ steps.reset.output.branch }}
+          ref: main
           path: test-deploy
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
