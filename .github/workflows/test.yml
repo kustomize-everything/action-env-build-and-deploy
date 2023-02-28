@@ -26,37 +26,18 @@ jobs:
         with:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
-          ref: main
-          path: test-deploy-reset
-          persist-credentials: true
-          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
-
-      - name: Delete branches if they exist
-        shell: bash
-        working-directory: test-deploy-reset
-        run: ../test/cleanup-branches.sh
-
-      - name: Reset testing repo to known state
-        id: reset
-        shell: bash
-        run: |-
-          cd test-deploy-reset
-          BRANCH="pr/${GITHUB_SHA}"
-          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
-          echo "BRANCH=${BRANCH}" >> $GITHUB_ENV
-          git checkout -B ${BRANCH}
-          git reset --hard 2c6d7862c78d9c2bd01f787a02829b5f2bf8e896
-          git push origin ${BRANCH} -f
-
-      - name: Checkout Testing Repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          repository: kustomize-everything/test-deploy
-          ref: ${{ steps.reset.output.branch }}
           path: test-deploy
           persist-credentials: true
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
+
+      - name: Update an image tag in a kustomization file
+        working-directory: test-deploy
+        run: |-
+          git checkout -B pr-action-env-build-and-deploy-${{ github.event.number }}-${{ github.run_id }}-diff
+          cd env/dev
+          kustomize edit set image nginx=nginx:1.${{github.run_id}}.0
+          git add kustomization.yaml
+          git commit -m "Update image tag for diff test"
 
       - name: Action Test with Defaults (diff only)
         uses: ./
@@ -69,19 +50,22 @@ jobs:
           git-commit-user: Pusher Robot
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
-      - name: Delete branches if they exist
-        shell: bash
-        working-directory: test-deploy-reset
-        run: ../test/cleanup-branches.sh
-
       - name: Checkout Testing Repo
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
           repository: kustomize-everything/test-deploy
-          ref: ${{ steps.reset.output.branch }}
           path: test-deploy
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
+
+      - name: Update an image tag in a kustomization file
+        working-directory: test-deploy
+        run: |-
+          git checkout -B pr-action-env-build-and-deploy-${{ github.event.number }}-${{ github.run_id }}-push
+          cd env/dev
+          kustomize edit set image nginx=nginx:1.${{github.run_id}}.1
+          git add kustomization.yaml
+          git commit -m "Update image tag for push test"
 
       - name: Action Test with dry-run false (pushes branch)
         uses: ./
@@ -104,37 +88,13 @@ jobs:
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
       - name: Update an image tag in a kustomization file
-        working-directory: test-deploy/env/dev
+        working-directory: test-deploy
         run: |-
-          kustomize edit set image nginx=nginx:1.9999.0
+          git checkout -B pr-action-env-build-and-deploy-${{ github.event.number }}-${{ github.run_id }}-pr
+          cd env/dev
+          kustomize edit set image nginx=nginx:1.${{github.run_id}}.2
           git add kustomization.yaml
-          git commit -m "Update image tag"
-          git push origin main
-
-      - name: Action Test with dry-run false after a change
-        uses: ./
-        with:
-          dry-run: "false"
-          environment: dev
-          push-environment-regex: dev
-          pr-environment-regex: false
-          working-directory: test-deploy
-          git-commit-user: Pusher Robot
-          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}B
-
-      - name: Delete branches if they exist
-        shell: bash
-        working-directory: test-deploy-reset
-        run: ../test/cleanup-branches.sh
-
-      - name: Checkout Testing Repo
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          repository: kustomize-everything/test-deploy
-          ref: ${{ steps.reset.output.branch }}
-          path: test-deploy
-          token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
+          git commit -m "Update image tag for PR test"
 
       - name: Action Test with dry-run false (opens PR)
         uses: ./
