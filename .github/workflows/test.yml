@@ -31,18 +31,9 @@ jobs:
           persist-credentials: true
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
-      - name: Delete env-dev branch if it exists
+      - name: Delete branches if they exist
         shell: bash
-        run: |
-          cd test-deploy-reset
-          set +e
-          if git ls-remote --exit-code --heads origin env-dev; then
-            git push --delete origin env-dev
-          fi
-          if git ls-remote --exit-code --heads origin deploy-pr/env-dev; then
-            git push --delete origin env-dev
-          fi
-          set -e
+        run: test/cleanup-branches.sh
 
       - name: Reset testing repo to known state
         id: reset
@@ -77,18 +68,9 @@ jobs:
           git-commit-user: Pusher Robot
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
-      - name: Delete env-dev branch if it exists
+      - name: Delete branches if they exist
         shell: bash
-        run: |
-          cd test-deploy-reset
-          set +e
-          if git ls-remote --exit-code --heads origin env-dev; then
-            git push --delete origin env-dev
-          fi
-          if git ls-remote --exit-code --heads origin deploy-pr/env-dev; then
-            git push --delete origin env-dev
-          fi
-          set -e
+        run: test/cleanup-branches.sh
 
       - name: Checkout Testing Repo
         uses: actions/checkout@v3
@@ -110,18 +92,9 @@ jobs:
           git-commit-user: Pusher Robot
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}
 
-      - name: Delete env-dev branch if it exists
+      - name: Delete branches if they exist
         shell: bash
-        run: |
-          cd test-deploy-reset
-          set +e
-          if git ls-remote --exit-code --heads origin env-dev; then
-            git push --delete origin env-dev
-          fi
-          if git ls-remote --exit-code --heads origin deploy-pr/env-dev; then
-            git push --delete origin env-dev
-          fi
-          set -e
+        run: test/cleanup-branches.sh
 
       - name: Checkout Testing Repo
         uses: actions/checkout@v3
