@@ -14,17 +14,18 @@ if ! git diff --quiet "origin/${DIFF_BRANCH}" --; then
   git diff "origin/${DIFF_BRANCH}" -- > git-diff
   echo "git diff origin/${DIFF_BRANCH}:"
   cat git-diff
-  diff="$(cat git-diff)"
-  diff="${diff//'%'/'%25'}"
-  diff="${diff//$'\n'/'%0A'}"
-  diff="${diff//$'\r'/'%0D'}"
-  echo "::set-output name=diff::$diff"
-  echo "Diff:"
-  echo "${diff}"
+  # Set random delimiter https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+  EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+  # shellcheck disable=SC2129
+  echo "diff<<$EOF" >> "${GITHUB_OUTPUT}"
+  # shellcheck disable=SC2129
+  cat git-diff >> "${GITHUB_OUTPUT}"
+  # shellcheck disable=SC2129
+  echo "$EOF" >> "${GITHUB_OUTPUT}"
   bytes="$(wc -c < git-diff | tr -d ' \n')"
   echo
   echo "Bytes: ${bytes}"
-  echo "::set-output name=diff-bytes::$bytes"
+  echo "diff-bytes=${bytes}" >> "${GITHUB_OUTPUT}"
   rm git-diff
 else
   echo "There are no changes to push to the ${PUSH_BRANCH} branch when

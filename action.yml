@@ -44,6 +44,12 @@ inputs:
   git-commit-message:
     description: Commit message to use for deployment
     required: false
+  token:
+    description: |
+      The token to use for pushing to the repo. This should be a bot account
+      with write access to the target repo, as well as PR access if it needs to
+      open a PR.
+    required: true
   helm-version:
     description: Helm Version to install
     default: 3.9.4
@@ -53,17 +59,19 @@ runs:
     - run: echo "${{ github.action_path }}" >> $GITHUB_PATH
       shell: bash
 
-    - uses: actions-ecosystem/action-regex-match@v2
+    - name: Detect Push Environment
       id: detect-push-environment
-      with:
-        text: ${{ inputs.environment }}
-        regex: ${{ inputs.push-environment-regex }}
+      shell: bash
+      run: |-
+        MATCH=$(python regex-match.py "${{ inputs.push-environment-regex }}" "${{ inputs.environment }}")
+        echo "match=$MATCH" >> $GITHUB_OUTPUT
 
-    - uses: actions-ecosystem/action-regex-match@v2
+    - name: Detect PR Environment
       id: detect-pr-environment
-      with:
-        text: ${{ inputs.environment }}
-        regex: ${{ inputs.pr-environment-regex }}
+      shell: bash
+      run: |-
+        MATCH=$(python regex-match.py "${{ inputs.pr-environment-regex }}" "${{ inputs.environment }}")
+        echo "match=$MATCH" >> $GITHUB_OUTPUT
 
     # These variables are re-used by the run steps.
     - name: Shared ENV Setup
@@ -77,7 +85,7 @@ runs:
 
     # Kustomize setup (this should be abstracted into a separate action repo)
     - name: Kustomize Setup
-      uses: kustomize-everything/action-kustomize@v1.0.4
+      uses: kustomize-everything/action-kustomize@v1.1.0
       with:
         version: ${{ inputs.version }}
         sha256-checksum: ${{ inputs.sha256-checksum }}
@@ -102,20 +110,16 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: kustomize-build.sh
 
-    - name: Git commit and diff against ${DIFF_BRANCH}
+    - name: Branch and stage
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: branch-and-stage.sh
+
+    - name: Git diff against ${{ env.DIFF_BRANCH }}
       shell: bash
       id: diff
       working-directory: ${{ inputs.working-directory }}
-      env:
-        GIT_COMMIT_MESSAGE: ${{ inputs.git-commit-message }}
-        GIT_HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-      run: commit-and-diff.sh
-
-    - name: Git Diff
-      shell: bash
-      working-directory: ${{ inputs.working-directory }}
-      run: |
-        git diff origin/${DIFF_BRANCH}
+      run: diff.sh
 
     - name: Find Comment
       if: github.event_name == 'pull_request'
@@ -125,10 +129,10 @@ runs:
         issue-number: ${{ github.event.pull_request.number }}
         comment-author: github-actions[bot]
         body-includes: Comparison of ${{env.DIFF_BRANCH}}
+        token: ${{ inputs.token }}
 
     - name: Create or update comment with No Changes
-      if: ${{ github.event_name == 'pull_request' && steps.fc.outputs.comment-id !=
-        0 && steps.diff.outputs.diff-bytes == 0 }}
+      if: ${{ github.event_name == 'pull_request' && steps.fc.outputs.comment-id != 0 && steps.diff.outputs.diff-bytes == 0 }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -138,10 +142,10 @@ runs:
 
           No changes detected.
         edit-mode: replace
+        token: ${{ inputs.token }}
 
     - name: Create or update comment with Diff
-      if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes
-        > 0 && steps.diff.outputs.diff-bytes < 65000 }}
+      if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes > 0 && steps.diff.outputs.diff-bytes < 65000 }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -157,10 +161,10 @@ runs:
           ```
           </details>
         edit-mode: replace
+        token: ${{ inputs.token }}
 
     - name: Create or update comment with Too Big Diff
-      if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes
-        >= 65000 }}
+      if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes >= 65000 }}
       uses: peter-evans/create-or-update-comment@v2
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
@@ -172,59 +176,41 @@ runs:
 
           Please [check the logs](${{env.RUN_URL}}).
         edit-mode: replace
+        token: ${{ inputs.token }}
 
     - name: Commit to ${{ env.PUSH_BRANCH }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'push' }}
       env:
         GIT_COMMIT_MESSAGE: ${{ inputs.git-commit-message }}
         GIT_HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-      run: |
-        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
-          if [ -n "${GIT_COMMIT_MESSAGE}" ]; then
-            git commit -m "${GIT_COMMIT_MESSAGE}
-
-            skip-checks: true
-            "
-          else
-            git commit -m "${GIT_HEAD_COMMIT_MESSAGE}
-
-            skip-checks: true
-            "
-          fi
-          echo "Changes committed to ${PUSH_BRANCH} branch."
-        else
-          echo "There are no changes to commit to ${PUSH_BRANCH} branch when
-            compared with origin/${DIFF_BRANCH}."
-        fi
+      if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'push' }}
+      run: commit.sh
 
     - name: Push to ${{ env.PUSH_BRANCH }}
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       if: ${{ inputs.dry-run == 'false' }}
       run: |
-        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
+        if ! git diff --quiet "origin/${DIFF_BRANCH}" ; then
           git push origin -f "${PUSH_BRANCH}"
         fi
 
     - name: Open Deployment PR to ${{ inputs.environment }}
       id: open-pr
       uses: peter-evans/create-pull-request@v4
-      if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'pull-request' &&
-        steps.diff.outputs.diff-bytes > 0 }}
+      if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'pull-request' && steps.diff.outputs.diff-bytes > 0 }}
       with:
         title: Deployment to ${{ inputs.environment }}
-        commit-message: ${{ github.event.head_commit.message }}
+        body: ${{ steps.commit-message.outputs.commit-message }}
         base: ${{ env.ENV_BRANCH }}
         branch: ${{ env.PUSH_BRANCH }}
         delete-branch: true
         path: ${{ inputs.working-directory }}
+        token: ${{ inputs.token }}
 
     - name: PR Opened or Updated
-      if: ${{ steps.open-pr.outputs.pull-request-number && (steps.open-pr.outputs.pull-request-operation
-        == 'created' || steps.open-pr.outputs.pull-request-operation == 'updated')
-        }}
+      if: ${{ steps.open-pr.outputs.pull-request-number && (steps.open-pr.outputs.pull-request-operation == 'created' || steps.open-pr.outputs.pull-request-operation == 'updated') }}
       shell: bash
       run: |
         echo "The deployment PR for ${{ inputs.environment }} is waiting for
@@ -234,8 +220,7 @@ runs:
         echo "${{ steps.cpr.outputs.pull-request-url }}"
 
     - name: PR Closed
-      if: ${{ steps.open-pr.outputs.pull-request-number && steps.open-pr.outputs.pull-request-operation
-        == 'closed' }}
+      if: ${{ steps.open-pr.outputs.pull-request-number && steps.open-pr.outputs.pull-request-operation == 'closed' }}
       shell: bash
       run: |-
         echo "The deployment PR for ${{ inputs.environment }} has been closed as

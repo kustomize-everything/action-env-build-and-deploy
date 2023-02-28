@@ -22,30 +22,3 @@ popd || exit 1
 
 # Must reset to clear build-time annotations
 git reset --hard
-
-set +e
-if ! git ls-remote --exit-code --heads origin "${ENV_BRANCH}"; then
-  set -e
-  git checkout --orphan "${ENV_BRANCH}"
-  git rm -rf --ignore-unmatch '*'
-  # Ensure that branch will not be polluted with unrendered YAML
-  rm -rf base/ env/
-  git commit --allow-empty -m "Initial Commit"
-  git push origin "${ENV_BRANCH}"
-fi
-
-set -e
-# Base changes off the branch being deployed to
-git checkout "${ENV_BRANCH}" --
-
-git checkout -B "${PUSH_BRANCH}" --
-
-echo "Cleaning staging area..."
-git rm -rf --ignore-unmatch '*'
-# Ensure that branch will not be polluted with unrendered YAML
-rm -rf base/ env/
-echo "Post-staging cleanup status:"
-git status
-echo "Moving built k8s-manifests into staging area..."
-cp /tmp/*.y*ml .
-git add --all -fv ./*.y*ml
