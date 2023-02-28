@@ -3,7 +3,7 @@
 if [ -z "${GIT_COMMIT_MESSAGE}" ]; then
     GIT_COMMIT_MESSAGE="${GIT_HEAD_COMMIT_MESSAGE}"
 fi
-echo "commit-message=${GIT_COMMIT_MESSAGE}" >> $GITHUB_OUTPUT
+echo "commit-message=${GIT_COMMIT_MESSAGE}" >> "${GITHUB_OUTPUT}"
 
 set +e
 if ! git diff --quiet "origin/${DIFF_BRANCH}" ; then
