@@ -68,8 +68,6 @@ jobs:
           cd env/dev
           kustomize edit set image nginx=nginx:1.${{github.run_id}}.1
           git add kustomization.yaml
-          git config --global user.name "No push; if this pushes it's a bug"
-          git config --global user.email "nobody@github.com"
           git commit -m "Update image tag for push test"
 
       - name: Action Test with dry-run false (pushes branch)
@@ -100,8 +98,6 @@ jobs:
           cd env/dev
           kustomize edit set image nginx=nginx:1.${{github.run_id}}.2
           git add kustomization.yaml
-          git config --global user.name "No push; if this pushes it's a bug"
-          git config --global user.email "nobody@github.com"
           git commit -m "Update image tag for PR test"
 
       - name: Action Test with dry-run false (opens PR)
