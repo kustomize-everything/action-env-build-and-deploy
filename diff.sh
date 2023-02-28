@@ -14,18 +14,12 @@ if ! git diff --quiet "origin/${DIFF_BRANCH}" --; then
   git diff "origin/${DIFF_BRANCH}" -- > git-diff
   echo "git diff origin/${DIFF_BRANCH}:"
   cat git-diff
-  diff="$(cat git-diff)"
-  diff="${diff//'%'/'%25'}"
-  diff="${diff//$'\n'/'%0A'}"
-  diff="${diff//$'\r'/'%0D'}"
   # shellcheck disable=SC2129
   echo "diff<<$EOF" >> "${GITHUB_OUTPUT}"
   # shellcheck disable=SC2129
-  echo "${diff}" >> "${GITHUB_OUTPUT}"
+  cat git-diff >> "${GITHUB_OUTPUT}"
   # shellcheck disable=SC2129
   echo "$EOF" >> "${GITHUB_OUTPUT}"
-  echo "Diff:"
-  echo "${diff}"
   bytes="$(wc -c < git-diff | tr -d ' \n')"
   echo
   echo "Bytes: ${bytes}"
