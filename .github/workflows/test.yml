@@ -116,8 +116,8 @@ jobs:
         with:
           dry-run: "false"
           environment: dev
-          push-environment-regex: false
-          pr-environment-regex: dev
+          push-environment-regex: dev
+          pr-environment-regex: false
           working-directory: test-deploy
           git-commit-user: Pusher Robot
           token: ${{ secrets.PUSHER_ROBOT_GITHUB_TOKEN }}B
