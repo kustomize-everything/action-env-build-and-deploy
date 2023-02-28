@@ -32,12 +32,13 @@ git reset --hard
 # Base changes off the branch being deployed to
 set +e
 # If the branch exists, check it out
-if git show-ref --verify --quiet "refs/heads/${ENV_BRANCH}"; then
+if git ls-remote --exit-code --heads origin "refs/heads/${ENV_BRANCH}"; then
   git checkout "${ENV_BRANCH}" --
 else
 # If the branch does not exist, create it
   git checkout --orphan "${ENV_BRANCH}" --
   git rm -rf --ignore-unmatch '*'
+  set -e
   # Ensure that branch will not be polluted with unrendered YAML
   rm -rf base/ env/
   git commit --allow-empty -m "Initial Commit"
