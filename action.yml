@@ -179,14 +179,15 @@ runs:
         GIT_COMMIT_MESSAGE: ${{ inputs.git-commit-message }}
         GIT_HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
       run: |
-        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
-          if [ -n "${GIT_COMMIT_MESSAGE}" ]; then
-            git commit -m "${GIT_COMMIT_MESSAGE}
+        if [ -n "${GIT_COMMIT_MESSAGE}" ]; then
+          GIT_COMMIT_MESSAGE="${GIT_COMMIT_MESSAGE}"
+        else
+          GIT_COMMIT_MESSAGE="Deploy ${{ env.ENV }} to ${{ env.PUSH_BRANCH }} branch"
+        fi
+        echo "commit-message=${GIT_COMMIT_MESSAGE}" >> $GITHUB_OUTPUT
 
-            skip-checks: true
-            "
-          else
-            git commit -m "${GIT_HEAD_COMMIT_MESSAGE}
+        if ! git diff --quiet origin/${DIFF_BRANCH} ; then
+            git commit -m "${GIT_COMMIT_MESSAGE}
 
             skip-checks: true
             "
@@ -212,7 +213,7 @@ runs:
       if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'pull-request' && steps.diff.outputs.diff-bytes > 0 }}
       with:
         title: Deployment to ${{ inputs.environment }}
-        body: ${{ steps.diff.outputs.diff }}
+        body: ${{ steps.commit-message.outputs.commit-message }}
         base: ${{ env.ENV_BRANCH }}
         branch: ${{ env.PUSH_BRANCH }}
         delete-branch: true
