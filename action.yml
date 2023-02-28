@@ -187,11 +187,10 @@ runs:
         echo "commit-message=${GIT_COMMIT_MESSAGE}" >> $GITHUB_OUTPUT
 
         if ! git diff --quiet origin/${DIFF_BRANCH} ; then
-            git commit -m "${GIT_COMMIT_MESSAGE}
+          git commit -m "${GIT_COMMIT_MESSAGE}
 
-            skip-checks: true
-            "
-          fi
+          skip-checks: true
+          "
           echo "Changes committed to ${PUSH_BRANCH} branch."
         else
           echo "There are no changes to commit to ${PUSH_BRANCH} branch when
