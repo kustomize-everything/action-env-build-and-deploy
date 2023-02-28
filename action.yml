@@ -177,6 +177,9 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'push' }}
+      env:
+        GIT_COMMIT_MESSAGE: ${{ inputs.git-commit-message }}
+        GIT_HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
       run: |
         if ! git diff --quiet origin/${DIFF_BRANCH} ; then
           if [ -n "${GIT_COMMIT_MESSAGE}" ]; then
