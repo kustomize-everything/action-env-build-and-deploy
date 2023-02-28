@@ -34,7 +34,7 @@ jobs:
       - name: Delete branches if they exist
         shell: bash
         working-directory: test-deploy-reset
-        run: test/cleanup-branches.sh
+        run: ../test/cleanup-branches.sh
 
       - name: Reset testing repo to known state
         id: reset
@@ -72,7 +72,7 @@ jobs:
       - name: Delete branches if they exist
         shell: bash
         working-directory: test-deploy-reset
-        run: test/cleanup-branches.sh
+        run: ../test/cleanup-branches.sh
 
       - name: Checkout Testing Repo
         uses: actions/checkout@v3
@@ -97,7 +97,7 @@ jobs:
       - name: Delete branches if they exist
         shell: bash
         working-directory: test-deploy-reset
-        run: test/cleanup-branches.sh
+        run: ../test/cleanup-branches.sh
 
       - name: Checkout Testing Repo
         uses: actions/checkout@v3
