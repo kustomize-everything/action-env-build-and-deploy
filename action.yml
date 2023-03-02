@@ -96,7 +96,7 @@ runs:
       id: install
 
     - name: Install yq
-      uses: mikefarah/yq@v4.31.1
+      uses: mikefarah/yq@v4.31.2
 
     - name: Set Git Author
       shell: bash
