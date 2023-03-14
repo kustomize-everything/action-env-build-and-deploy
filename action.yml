@@ -63,14 +63,14 @@ runs:
       id: detect-push-environment
       shell: bash
       run: |-
-        MATCH=$(python regex-match.py "${{ inputs.push-environment-regex }}" "${{ inputs.environment }}")
+        MATCH=$(python ${{ github.action_path }}/regex-match.py "${{ inputs.push-environment-regex }}" "${{ inputs.environment }}")
         echo "match=$MATCH" >> $GITHUB_OUTPUT
 
     - name: Detect PR Environment
       id: detect-pr-environment
       shell: bash
       run: |-
-        MATCH=$(python regex-match.py "${{ inputs.pr-environment-regex }}" "${{ inputs.environment }}")
+        MATCH=$(python ${{ github.action_path }}/regex-match.py "${{ inputs.pr-environment-regex }}" "${{ inputs.environment }}")
         echo "match=$MATCH" >> $GITHUB_OUTPUT
 
     # These variables are re-used by the run steps.
