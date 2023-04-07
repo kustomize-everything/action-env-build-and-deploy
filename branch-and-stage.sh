@@ -29,6 +29,8 @@ echo "Cleaning staging area..."
 git rm -rf --ignore-unmatch '*'
 # Ensure that branch will not be polluted with unrendered YAML
 rm -rf base/ env/
+# Ensure that untracked files are cleaned up
+git clean -fd
 echo "Post-staging cleanup status:"
 git status
 echo "Moving built k8s-manifests into staging area..."
