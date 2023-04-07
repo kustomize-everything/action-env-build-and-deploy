@@ -3,7 +3,12 @@
 if [ -z "${GIT_COMMIT_MESSAGE}" ]; then
     GIT_COMMIT_MESSAGE="${GIT_HEAD_COMMIT_MESSAGE}"
 fi
-echo "commit-message='${GIT_COMMIT_MESSAGE}'" >> "${GITHUB_OUTPUT}"
+# Multi-line output
+# Reference: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+echo "commit-message<<$EOF" >> "${GITHUB_OUTPUT}"
+echo "${GIT_COMMIT_MESSAGE}" >> "${GITHUB_OUTPUT}"
+echo "$EOF" >> "${GITHUB_OUTPUT}"
 
 set +e
 if ! git diff --quiet "origin/${DIFF_BRANCH}" ; then
