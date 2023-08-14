@@ -7,8 +7,12 @@ set -e
 RENDER_DIR=$(mktemp -d)
 RENDER_FILE="${RENDER_DIR}/all.yaml"
 
-echo "wtf is in ${RENDER_DIR} pre-kustomize"
-ls -la "${RENDER_DIR}"
+if [[ "${RUNNER_DEBUG}" == "1" ]]; then
+  echo "[DEBUG] RENDER_DIR=${RENDER_DIR}"
+  echo "[DEBUG] RENDER_FILE=${RENDER_FILE}"
+  echo "[DEBUG] ls ${RENDER_DIR} pre-kustomize:"
+  ls -la "${RENDER_DIR}"
+fi
 
 # Automatically add meta annotations at build-time
 pushd "${ENV_DIR}" || exit 1
@@ -21,18 +25,29 @@ popd || exit 1
 
 kustomize build --enable-helm "${ENV_DIR}" > "${RENDER_FILE}"
 
-echo "wtf is in ${RENDER_DIR} post-kustomize"
-ls -la "${RENDER_DIR}"
+if [[ "${RUNNER_DEBUG}" == "1" ]]; then
+  echo "[DEBUG] ls ${RENDER_DIR} post-kustomize"
+  ls -la "${RENDER_DIR}"
+fi
 
-pushd "${RENDER_DIR}" || exit 1
-# Invalid GitHub artifact path name characters: Double quote ", Colon :, Less than <, Greater than >, Vertical bar |, Asterisk *, Question mark ?
-yq -s '.kind + "-" + (.apiVersion | sub("/", "_")) + "-" + (.metadata.name | sub("[:<>|*?/\\]", "_")) + ".yaml"' < "${RENDER_FILE}"
 
-echo "wtf is in ${RENDER_DIR} post-yq"
-ls -la "${RENDER_DIR}"
+# If the render file is not empty
+if [[ -s "${RENDER_FILE}" ]]; then
+  pushd "${RENDER_DIR}" || exit 1
+  # Split the rendered file into individual files for each resource
+  # Invalid GitHub artifact path name characters: Double quote ", Colon :, Less than <, Greater than >, Vertical bar |, Asterisk *, Question mark ?
+  yq -s '.kind + "-" + (.apiVersion | sub("/", "_")) + "-" + (.metadata.name | sub("[:<>|*?/\\]", "_")) + ".yaml"' < "${RENDER_FILE}"
 
-rm "${RENDER_FILE}"
-popd || exit 1
+  if [[ "${RUNNER_DEBUG}" == "1" ]]; then
+    echo "[DEBUG] ls ${RENDER_DIR} post-yq"
+    ls -la "${RENDER_DIR}"
+  fi
+
+  rm "${RENDER_FILE}"
+  popd || exit 1
+else
+  echo "[WARN] ${RENDER_FILE} is empty"
+fi
 
 # Must reset to clear build-time annotations
 git reset --hard
