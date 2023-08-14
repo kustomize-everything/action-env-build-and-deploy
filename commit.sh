@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source "${GITHUB_ACTION_PATH}/util.sh"
+
 if [ -z "${GIT_COMMIT_MESSAGE}" ]; then
     GIT_COMMIT_MESSAGE="${GIT_HEAD_COMMIT_MESSAGE}"
 fi

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source "${GITHUB_ACTION_PATH}/util.sh"
+
 # Fail on non-zero exit
 set -e
 
@@ -7,10 +9,10 @@ set -e
 RENDER_DIR=$(mktemp -d)
 RENDER_FILE="${RENDER_DIR}/all.yaml"
 
-if [[ "${RUNNER_DEBUG}" == "1" ]]; then
-  echo "[DEBUG] RENDER_DIR=${RENDER_DIR}"
-  echo "[DEBUG] RENDER_FILE=${RENDER_FILE}"
-  echo "[DEBUG] ls ${RENDER_DIR} pre-kustomize:"
+if is_debug; then
+  echo "[debug] RENDER_DIR=${RENDER_DIR}"
+  echo "[debug] RENDER_FILE=${RENDER_FILE}"
+  echo "[debug] ls ${RENDER_DIR} pre-kustomize:"
   ls -la "${RENDER_DIR}"
 fi
 
@@ -25,8 +27,8 @@ popd || exit 1
 
 kustomize build --enable-helm "${ENV_DIR}" > "${RENDER_FILE}"
 
-if [[ "${RUNNER_DEBUG}" == "1" ]]; then
-  echo "[DEBUG] ls ${RENDER_DIR} post-kustomize"
+if is_debug; then
+  echo "[debug] ls ${RENDER_DIR} post-kustomize"
   ls -la "${RENDER_DIR}"
 fi
 
@@ -38,8 +40,8 @@ if [[ -s "${RENDER_FILE}" ]]; then
   # Invalid GitHub artifact path name characters: Double quote ", Colon :, Less than <, Greater than >, Vertical bar |, Asterisk *, Question mark ?
   yq -s '.kind + "-" + (.apiVersion | sub("/", "_")) + "-" + (.metadata.name | sub("[:<>|*?/\\]", "_")) + ".yaml"' < "${RENDER_FILE}"
 
-  if [[ "${RUNNER_DEBUG}" == "1" ]]; then
-    echo "[DEBUG] ls ${RENDER_DIR} post-yq"
+  if is_debug; then
+    echo "[debug] ls ${RENDER_DIR} post-yq"
     ls -la "${RENDER_DIR}"
   fi
 else

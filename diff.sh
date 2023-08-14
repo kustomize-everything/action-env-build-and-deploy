@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source "${GITHUB_ACTION_PATH}/util.sh"
+
 DIFF_BRANCH_HEAD_SHA="$(git show-ref --hash "origin/${DIFF_BRANCH}")"
 echo "DIFF_BRANCH_HEAD_SHA=${DIFF_BRANCH_HEAD_SHA}" >> "${GITHUB_ENV}"
 DIFF_BRANCH_HEAD_SHORT_SHA="$(git show-ref --hash=6 "origin/${DIFF_BRANCH}")"
@@ -7,13 +9,22 @@ echo "DIFF_BRANCH_HEAD_SHORT_SHA=${DIFF_BRANCH_HEAD_SHORT_SHA}" >> "${GITHUB_ENV
 DIFF_BRANCH_HEAD_SHA_URL="$DEPLOY_REPO_URL/commit/$DIFF_BRANCH_HEAD_SHA"
 echo "DIFF_BRANCH_HEAD_SHA_URL=${DIFF_BRANCH_HEAD_SHA_URL}" >> "${GITHUB_ENV}"
 
+if is_debug; then
+  echo "[debug] DIFF_BRANCH_HEAD_SHA=${DIFF_BRANCH_HEAD_SHA}"
+  echo "[debug] DIFF_BRANCH_HEAD_SHORT_SHA=${DIFF_BRANCH_HEAD_SHORT_SHA}"
+  echo "[debug] DIFF_BRANCH_HEAD_SHA_URL=${DIFF_BRANCH_HEAD_SHA_URL}"
+fi
+
 if ! git diff --quiet "origin/${DIFF_BRANCH}" --; then
   # Fail on non-zero exit
   set -e
 
   git diff "origin/${DIFF_BRANCH}" -- > git-diff
   echo "git diff origin/${DIFF_BRANCH}:"
-  cat git-diff
+  if is_debug; then
+    echo "[debug] git-diff:"
+    cat git-diff
+  fi
   # Set random delimiter https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
   EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
   # shellcheck disable=SC2129
@@ -24,7 +35,9 @@ if ! git diff --quiet "origin/${DIFF_BRANCH}" --; then
   echo "$EOF" >> "${GITHUB_OUTPUT}"
   bytes="$(wc -c < git-diff | tr -d ' \n')"
   echo
-  echo "Bytes: ${bytes}"
+  if is_debug; then
+    echo "[debug] git-diff bytes: ${bytes}"
+  fi
   echo "diff-bytes=${bytes}" >> "${GITHUB_OUTPUT}"
   rm git-diff
 else
