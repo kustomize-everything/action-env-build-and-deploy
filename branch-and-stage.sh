@@ -39,7 +39,7 @@ git status
 # rendered env.
 if [[ -n $(find "${RENDER_DIR?}" -name '*.y*ml') ]]; then
   echo "Moving built k8s manifests into staging area..."
-  cp "${RENDER_DIR}"/*.y*ml .
+  cp "${RENDER_DIR?}"/*.y*ml .
   git add --all -fv ./*.y*ml
 else
   echo "No k8s manifests were built, staging area will be empty."

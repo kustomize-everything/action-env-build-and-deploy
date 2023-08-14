@@ -26,3 +26,6 @@ popd || exit 1
 
 # Must reset to clear build-time annotations
 git reset --hard
+
+# Export RENDER_DIR for downstream steps using new GH action output syntax
+echo "RENDER_DIR=${RENDER_DIR}" >> "${GITHUB_ENV}"
