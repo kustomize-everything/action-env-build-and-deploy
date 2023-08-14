@@ -1,10 +1,6 @@
 #!/bin/bash
 
-# Output all commands
-# set -x
-
-# Show line numbers
-# export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+source "util.sh"
 
 # Base changes off the branch being deployed to
 set +e
@@ -31,7 +27,7 @@ git rm -rf --ignore-unmatch '*'
 rm -rf base/ env/
 # Ensure that untracked files are cleaned up
 git clean -fd
-if [[ "${RUNNER_DEBUG}" == "1" ]]; then
+if is_debug; then
   echo "Post-staging cleanup status:"
   git status
 fi
@@ -42,7 +38,7 @@ fi
 FOUND_YAML=$(find "${RENDER_DIR?}" -name '*.y*ml')
 if [[ -n "${FOUND_YAML}" ]]; then
   echo "Moving built k8s manifests into staging area..."
-  if [[ "${RUNNER_DEBUG}" == "1" ]]; then
+  if is_debug; then
     echo "[DEBUG] YAML files found in ${RENDER_DIR?}:"
     echo "[DEBUG] ${FOUND_YAML}"
   fi
