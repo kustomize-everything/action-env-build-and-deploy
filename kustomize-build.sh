@@ -31,9 +31,9 @@ if [[ "${RUNNER_DEBUG}" == "1" ]]; then
 fi
 
 
+pushd "${RENDER_DIR}" || exit 1
 # If the render file is not empty
 if [[ -s "${RENDER_FILE}" ]]; then
-  pushd "${RENDER_DIR}" || exit 1
   # Split the rendered file into individual files for each resource
   # Invalid GitHub artifact path name characters: Double quote ", Colon :, Less than <, Greater than >, Vertical bar |, Asterisk *, Question mark ?
   yq -s '.kind + "-" + (.apiVersion | sub("/", "_")) + "-" + (.metadata.name | sub("[:<>|*?/\\]", "_")) + ".yaml"' < "${RENDER_FILE}"
@@ -42,12 +42,12 @@ if [[ -s "${RENDER_FILE}" ]]; then
     echo "[DEBUG] ls ${RENDER_DIR} post-yq"
     ls -la "${RENDER_DIR}"
   fi
-
-  rm "${RENDER_FILE}"
-  popd || exit 1
 else
   echo "[WARN] ${RENDER_FILE} is empty"
 fi
+# Always cleanup the render file
+rm "${RENDER_FILE}"
+popd || exit 1
 
 # Must reset to clear build-time annotations
 git reset --hard
