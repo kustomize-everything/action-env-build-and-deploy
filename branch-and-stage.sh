@@ -1,10 +1,6 @@
 #!/bin/bash
 
-# Output all commands
-# set -x
-
-# Show line numbers
-# export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
+source "${GITHUB_ACTION_PATH}/util.sh"
 
 # Base changes off the branch being deployed to
 set +e
@@ -31,14 +27,21 @@ git rm -rf --ignore-unmatch '*'
 rm -rf base/ env/
 # Ensure that untracked files are cleaned up
 git clean -fd
-echo "Post-staging cleanup status:"
-git status
+if is_debug; then
+  echo "Post-staging cleanup status:"
+  git status
+fi
 
 # If there are yaml files in RENDER_DIR (set by kustomize-build.sh), copy them
 # to staging and commit, otherwise, output that there are no files in the
 # rendered env.
-if [[ -n $(find "${RENDER_DIR?}" -name '*.y*ml') ]]; then
+FOUND_YAML=$(find "${RENDER_DIR?}" -name '*.y*ml')
+if [[ -n "${FOUND_YAML}" ]]; then
   echo "Moving built k8s manifests into staging area..."
+  if is_debug; then
+    echo "[DEBUG] YAML files found in ${RENDER_DIR?}:"
+    echo "[DEBUG] ${FOUND_YAML}"
+  fi
   cp "${RENDER_DIR?}"/*.y*ml .
   git add --all -fv ./*.y*ml
 else

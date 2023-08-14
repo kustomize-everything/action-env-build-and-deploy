@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source "${GITHUB_ACTION_PATH}/util.sh"
+
 # Fail on non-zero exit
 set -e
 
