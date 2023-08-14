@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source "${GITHUB_WORKSPACE}/util.sh"
+source "util.sh"
 
 # Base changes off the branch being deployed to
 set +e
