@@ -33,6 +33,16 @@ rm -rf base/ env/
 git clean -fd
 echo "Post-staging cleanup status:"
 git status
-echo "Moving built k8s-manifests into staging area..."
-cp /tmp/*.y*ml .
-git add --all -fv ./*.y*ml
+
+# If there are yaml files in RENDER_DIR (set by kustomize-build.sh), copy them
+# to staging and commit, otherwise, output that there are no files in the
+# rendered env.
+if [[ -n $(find "${RENDER_DIR?}" -name '*.y*ml') ]]; then
+  echo "Moving built k8s manifests into staging area..."
+  cp "${RENDER_DIR?}"/*.y*ml .
+  git add --all -fv ./*.y*ml
+else
+  echo "No k8s manifests were built, staging area will be empty."
+  # git add the removed files; hopefully no yaml pollution
+  git add --all -fv .
+fi
