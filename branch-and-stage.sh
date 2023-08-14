@@ -33,6 +33,14 @@ rm -rf base/ env/
 git clean -fd
 echo "Post-staging cleanup status:"
 git status
-echo "Moving built k8s-manifests into staging area..."
-cp /tmp/*.y*ml .
+
+# If there are yaml files in /tmp, copy them to staging and commit, otherwise, output that there are no files in the rendered env
+# and commit the now empty staging area.
+if [[ -n $(find /tmp -name '*.y*ml') ]]; then
+  echo "Moving built k8s manifests into staging area..."
+  cp /tmp/*.y*ml .
+else
+  echo "No k8s manifests were built, staging area will be empty."
+fi
+
 git add --all -fv ./*.y*ml
