@@ -7,6 +7,9 @@ set -e
 RENDER_DIR=$(mktemp -d)
 RENDER_FILE="${RENDER_DIR}/all.yaml"
 
+echo "wtf is in ${RENDER_DIR} pre-kustomize"
+ls -la "${RENDER_DIR}"
+
 # Automatically add meta annotations at build-time
 pushd "${ENV_DIR}" || exit 1
 kustomize edit add annotation env-branch:"${ENV_BRANCH}"
@@ -18,9 +21,16 @@ popd || exit 1
 
 kustomize build --enable-helm "${ENV_DIR}" > "${RENDER_FILE}"
 
+echo "wtf is in ${RENDER_DIR} post-kustomize"
+ls -la "${RENDER_DIR}"
+
 pushd "${RENDER_DIR}" || exit 1
 # Invalid GitHub artifact path name characters: Double quote ", Colon :, Less than <, Greater than >, Vertical bar |, Asterisk *, Question mark ?
 yq -s '.kind + "-" + (.apiVersion | sub("/", "_")) + "-" + (.metadata.name | sub("[:<>|*?/\\]", "_")) + ".yaml"' < "${RENDER_FILE}"
+
+echo "wtf is in ${RENDER_DIR} post-yq"
+ls -la "${RENDER_DIR}"
+
 rm "${RENDER_FILE}"
 popd || exit 1
 
