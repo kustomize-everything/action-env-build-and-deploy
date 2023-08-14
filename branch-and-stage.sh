@@ -34,11 +34,12 @@ git clean -fd
 echo "Post-staging cleanup status:"
 git status
 
-# If there are yaml files in /tmp, copy them to staging and commit, otherwise, output that there are no files in the rendered env
-# and commit the now empty staging area.
-if [[ -n $(find /tmp -name '*.y*ml') ]]; then
+# If there are yaml files in RENDER_DIR (set by kustomize-build.sh), copy them
+# to staging and commit, otherwise, output that there are no files in the
+# rendered env and commit the now empty staging area.
+if [[ -n $(find "${RENDER_DIR?}" -name '*.y*ml') ]]; then
   echo "Moving built k8s manifests into staging area..."
-  cp /tmp/*.y*ml .
+  cp "${RENDER_DIR}"/*.y*ml .
 else
   echo "No k8s manifests were built, staging area will be empty."
 fi
