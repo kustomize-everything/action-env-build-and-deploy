@@ -4,8 +4,8 @@
 set -e
 
 # Generate dir in /tmp for kustomize to store the render
-export RENDER_DIR=$(mktemp -d)
-export RENDER_FILE="${RENDER_DIR}/all.yaml"
+RENDER_DIR=$(mktemp -d)
+RENDER_FILE="${RENDER_DIR}/all.yaml"
 
 # Automatically add meta annotations at build-time
 pushd "${ENV_DIR}" || exit 1
