@@ -37,8 +37,11 @@ git status
 # If there are yaml files in RENDER_DIR (set by kustomize-build.sh), copy them
 # to staging and commit, otherwise, output that there are no files in the
 # rendered env.
-if [[ -n $(find "${RENDER_DIR?}" -name '*.y*ml') ]]; then
+FOUND_YAML=$(find "${RENDER_DIR?}" -name '*.y*ml')
+if [[ -n "${FOUND_YAML}" ]]; then
   echo "Moving built k8s manifests into staging area..."
+  echo "YAML files found in ${RENDER_DIR?}:"
+  echo "${FOUND_YAML}"
   cp "${RENDER_DIR?}"/*.y*ml .
   git add --all -fv ./*.y*ml
 else
