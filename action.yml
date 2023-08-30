@@ -28,11 +28,11 @@ inputs:
   version:
     description: Version of Kustomize to use
     required: false
-    default: 4.5.7
+    default: 5.1.1
   sha256-checksum:
     description: Checksum of Kustomize version
     required: false
-    default: 701e3c4bfa14e4c520d481fdf7131f902531bfc002cb5062dcf31263a09c70c9
+    default: 3b30477a7ff4fb6547fa77d8117e66d995c2bdd526de0dafbf8b7bcb9556c85d
   git-commit-user:
     description: Name to add to the Git Commit Message
     required: false
