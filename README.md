@@ -1,5 +1,7 @@
 # action-env-build-and-diff
 
+[![CodeScene general](https://codescene.io/images/analyzed-by-codescene-badge.svg)](https://codescene.io/projects/44667)
+
 Build and diff a Kustomize Environment overlay with GitHub Actions
 
 ## Usage
