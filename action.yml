@@ -133,7 +133,7 @@ runs:
 
     - name: Create or update comment with No Changes
       if: ${{ github.event_name == 'pull_request' && steps.fc.outputs.comment-id != 0 && steps.diff.outputs.diff-bytes == 0 }}
-      uses: peter-evans/create-or-update-comment@v3
+      uses: peter-evans/create-or-update-comment@v4
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
@@ -146,7 +146,7 @@ runs:
 
     - name: Create or update comment with Diff
       if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes > 0 && steps.diff.outputs.diff-bytes < 65000 }}
-      uses: peter-evans/create-or-update-comment@v3
+      uses: peter-evans/create-or-update-comment@v4
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
@@ -165,7 +165,7 @@ runs:
 
     - name: Create or update comment with Too Big Diff
       if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes >= 65000 }}
-      uses: peter-evans/create-or-update-comment@v3
+      uses: peter-evans/create-or-update-comment@v4
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
