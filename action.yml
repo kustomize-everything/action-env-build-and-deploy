@@ -95,9 +95,6 @@ runs:
         version: ${{ inputs.helm-version }}   # default is latest (stable)
       id: install
 
-    - name: Install yq
-      uses: mikefarah/yq@v4.42.1
-
     - name: Set Git Author
       shell: bash
       run: |
