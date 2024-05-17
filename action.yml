@@ -10,6 +10,10 @@ inputs:
     description: Regex to match environments which will be pushed to directly
     required: false
     default: .*(development|integration).*
+  base-path:
+    description: Base path for directories base and env directories
+    required: false
+    default: '.'
   pr-environment-regex:
     description: |
       Regex to match environments which will push to a
@@ -78,6 +82,7 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       env:
+        BASE_PATH: ${{ inputs.base-path }}
         ENV: ${{ inputs.environment }}
         PUSH_ENVIRONMENT_REGEX: ${{ steps.detect-push-environment.outputs.match }}
         PR_ENVIRONMENT_REGEX: ${{ steps.detect-pr-environment.outputs.match }}
