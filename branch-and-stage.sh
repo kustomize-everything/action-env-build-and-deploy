@@ -2,6 +2,24 @@
 
 source "${GITHUB_ACTION_PATH}/util.sh"
 
+pathsToCopy="$1"
+# Copy paths to render dir
+for row in $(echo "${pathsToCopy}" | jq -c '.[]'); do
+  _jq() {
+    echo ${row} | jq -r ${1}
+  }
+  copy=$(_jq '.if')
+  source=$(_jq '.source')
+  target=$(_jq '.target')
+
+  if [ "${copy}" = true ]; then
+    echo "Copying from ${RENDER_DIR?}/${target}"
+    mkdir -p $(dirname "${RENDER_DIR?}/${target}") && cp -r "./${source}" "${RENDER_DIR?}/${target}"
+  else
+    echo "Skipping copy to render dir for ${source}"
+  fi
+done
+
 # Base changes off the branch being deployed to
 set +e
 # If the branch exists, check it out
@@ -49,3 +67,20 @@ else
   # git add the removed files; hopefully no yaml pollution
   git add --all -fv .
 fi
+
+#Copy from render dir to branch
+for row in $(echo "${pathsToCopy}" | jq -c '.[]'); do
+  _jq() {
+    echo ${row} | jq -r ${1}
+  }
+  copy=$(_jq '.if')
+  target=$(_jq '.target')
+
+  if [ "${copy}" = true ]; then
+    echo "Copying from ${RENDER_DIR?}/${target} to ./${target}"
+    mkdir -p $(dirname "./${target}") && cp -r "${RENDER_DIR?}/${target}" "./${target}"
+    git add "./${target}"
+  else
+    echo "Skipping copy to branch for ${source}"
+  fi
+done

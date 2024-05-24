@@ -16,6 +16,13 @@ inputs:
       deploy-pr/<environment> branch and open a PR for review
     required: false
     default: .*(staging|production).*
+  include-paths:
+    description: |
+      Copy specified paths to branch.
+      Input format: JSON list of objects string with fields: if, source and target.
+      Example: [{"if": true, "source": "path/to/source1", "target": "path/to/target1"}]
+    required: false
+    default: '[]'
   dry-run:
     description: |
       On a dry-run only the kustomize build will occur and the built branch will
@@ -95,9 +102,6 @@ runs:
         version: ${{ inputs.helm-version }}   # default is latest (stable)
       id: install
 
-    - name: Install yq
-      uses: mikefarah/yq@v4.42.1
-
     - name: Set Git Author
       shell: bash
       run: |
@@ -113,7 +117,7 @@ runs:
     - name: Branch and stage
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: branch-and-stage.sh
+      run: branch-and-stage.sh "${{ inputs.include-paths }}"
 
     - name: Git diff against ${{ env.DIFF_BRANCH }}
       shell: bash

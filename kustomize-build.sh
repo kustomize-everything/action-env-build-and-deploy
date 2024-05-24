@@ -38,7 +38,7 @@ pushd "${RENDER_DIR}" || exit 1
 if [[ -s "${RENDER_FILE}" ]]; then
   # Split the rendered file into individual files for each resource
   # Invalid GitHub artifact path name characters: Double quote ", Colon :, Less than <, Greater than >, Vertical bar |, Asterisk *, Question mark ?
-  yq -s '.kind + "-" + (.apiVersion | sub("/", "_")) + "-" + (.metadata.name | sub("[:<>|*?/\\]", "_")) + ".yaml"' < "${RENDER_FILE}"
+  yq -s '.kind + "-" + (.apiVersion | sub("/", "_")) + "-" + (.metadata.name | sub("[:<>|*?/]", "_")) + ".yaml"' < "${RENDER_FILE}"
 
   if is_debug; then
     echo "[debug] ls ${RENDER_DIR} post-yq"
