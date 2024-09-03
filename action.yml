@@ -195,7 +195,7 @@ runs:
 
     - name: Open Deployment PR to ${{ inputs.environment }}
       id: open-pr
-      uses: peter-evans/create-pull-request@v6
+      uses: peter-evans/create-pull-request@v7
       if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'pull-request' && steps.diff.outputs.diff-bytes > 0 }}
       with:
         title: Deployment to ${{ inputs.environment }}
