@@ -201,7 +201,7 @@ runs:
       uses: peter-evans/create-pull-request@v6
       if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'pull-request' && steps.diff.outputs.diff-bytes > 0 }}
       with:
-        title: ${{ inputs.title || ('Deployment to ' + inputs.environment) }}
+        title: ${{ inputs.title || format('Deployment to {0}', inputs.environment) }}
         body: ${{ steps.commit-message.outputs.commit-message }}
         base: ${{ env.ENV_BRANCH }}
         branch: ${{ env.PUSH_BRANCH }}
