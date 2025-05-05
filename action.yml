@@ -53,6 +53,9 @@ inputs:
   helm-version:
     description: Helm Version to install
     default: 3.9.4
+  title:
+    description: Custom title for the pull request. If not provided, defaults to "Deployment to {environment}"
+    required: false
 runs:
   using: composite
   steps:
@@ -198,7 +201,7 @@ runs:
       uses: peter-evans/create-pull-request@v6
       if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'pull-request' && steps.diff.outputs.diff-bytes > 0 }}
       with:
-        title: Deployment to ${{ inputs.environment }}
+        title: ${{ inputs.title || 'Deployment to ' || inputs.environment }}
         body: ${{ steps.commit-message.outputs.commit-message }}
         base: ${{ env.ENV_BRANCH }}
         branch: ${{ env.PUSH_BRANCH }}
