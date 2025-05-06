@@ -13,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: YAML Lint
-        uses: karancode/yamllint-github-action@v2.1.1
+        uses: karancode/yamllint-github-action@v3.0.0
         with:
           yamllint_comment: true
           yamllint_config_filepath: .github/config/yaml-linter.yaml
