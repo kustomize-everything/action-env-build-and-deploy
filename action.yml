@@ -93,7 +93,7 @@ runs:
         version: ${{ inputs.version }}
         sha256-checksum: ${{ inputs.sha256-checksum }}
 
-    - uses: azure/setup-helm@v4
+    - uses: azure/setup-helm@v5
       with:
         version: ${{ inputs.helm-version }}   # default is latest (stable)
       id: install
@@ -123,7 +123,7 @@ runs:
 
     - name: Find Comment
       if: github.event_name == 'pull_request'
-      uses: peter-evans/find-comment@v3
+      uses: peter-evans/find-comment@v4
       id: fc
       with:
         issue-number: ${{ github.event.pull_request.number }}
@@ -133,7 +133,7 @@ runs:
 
     - name: Create or update comment with No Changes
       if: ${{ github.event_name == 'pull_request' && steps.fc.outputs.comment-id != 0 && steps.diff.outputs.diff-bytes == 0 }}
-      uses: peter-evans/create-or-update-comment@v4
+      uses: peter-evans/create-or-update-comment@v5
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
@@ -146,7 +146,7 @@ runs:
 
     - name: Create or update comment with Diff
       if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes > 0 && steps.diff.outputs.diff-bytes < 65000 }}
-      uses: peter-evans/create-or-update-comment@v4
+      uses: peter-evans/create-or-update-comment@v5
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
@@ -165,7 +165,7 @@ runs:
 
     - name: Create or update comment with Too Big Diff
       if: ${{ github.event_name == 'pull_request' && steps.diff.outputs.diff-bytes >= 65000 }}
-      uses: peter-evans/create-or-update-comment@v4
+      uses: peter-evans/create-or-update-comment@v5
       with:
         comment-id: ${{ steps.fc.outputs.comment-id }}
         issue-number: ${{ github.event.pull_request.number }}
@@ -198,7 +198,7 @@ runs:
 
     - name: Open Deployment PR to ${{ inputs.environment }}
       id: open-pr
-      uses: peter-evans/create-pull-request@v6
+      uses: peter-evans/create-pull-request@v8
       if: ${{ inputs.dry-run == 'false' && env.DEPLOY_METHOD == 'pull-request' && steps.diff.outputs.diff-bytes > 0 }}
       with:
         title: ${{ inputs.title || format('Deployment to {0}', inputs.environment) }}
