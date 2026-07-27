@@ -93,7 +93,7 @@ runs:
         version: ${{ inputs.version }}
         sha256-checksum: ${{ inputs.sha256-checksum }}
 
-    - uses: azure/setup-helm@v4
+    - uses: azure/setup-helm@v5
       with:
         version: ${{ inputs.helm-version }}   # default is latest (stable)
       id: install
