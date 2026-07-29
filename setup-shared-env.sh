@@ -8,7 +8,7 @@ set -e
 DEPLOY_REPO_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}"
 echo "DEPLOY_REPO_URL=${DEPLOY_REPO_URL}" >> "${GITHUB_ENV}"
 
-ENV_DIR="env/${ENV}"
+ENV_DIR="${BASE_PATH}/env/${ENV}"
 echo "ENV_DIR=${ENV_DIR}" >> "${GITHUB_ENV}"
 
 ENV_BRANCH="$(echo "${ENV_DIR}" | tr "/" "-")"
